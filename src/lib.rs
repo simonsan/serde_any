@@ -11,6 +11,9 @@ extern crate serde_json;
 #[cfg(feature = "yaml")]
 extern crate serde_yaml;
 
+#[cfg(feature = "ron")]
+extern crate ron;
+
 use std::path::Path;
 use std::ffi::OsStr;
 use std::io::{Read, Write};
@@ -19,8 +22,6 @@ use std::fmt;
 
 use serde::de::{Deserialize, DeserializeOwned};
 use serde::ser::Serialize;
-
-// use failure::{Backtrace, Context, Fail, ResultExt};
 
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -33,6 +34,11 @@ pub enum Error {
 
     #[fail(display = "TOML serialize error: {}", _0)]
     TomlSerialize(#[fail(cause)] toml::ser::Error),
+
+    #[fail(display = "RON deserialize error: {}", _0)]
+    RonDeserialize(#[fail(cause)] ron::de::Error),
+
+    #[fail(display = "RON serialize error: {}", _0)] RonSerialize(#[fail(cause)] ron::ser::Error),
 
     #[fail(display = "IO error: {}", _0)] Io(#[fail(cause)] std::io::Error),
 
@@ -54,16 +60,29 @@ macro_rules! impl_error_from {
 }
 
 impl_error_from!(std::io::Error => Error::Io);
+
+#[cfg(feature = "json")]
 impl_error_from!(serde_json::Error => Error::Json);
+
+#[cfg(feature = "yaml")]
 impl_error_from!(serde_yaml::Error => Error::Yaml);
+
+#[cfg(feature = "toml")]
 impl_error_from!(toml::ser::Error => Error::TomlSerialize);
+#[cfg(feature = "toml")]
 impl_error_from!(toml::de::Error => Error::TomlDeserialize);
+
+#[cfg(feature = "ron")]
+impl_error_from!(ron::ser::Error => Error::RonSerialize);
+#[cfg(feature = "ron")]
+impl_error_from!(ron::de::Error => Error::RonDeserialize);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Format {
     Toml,
     Json,
     Yaml,
+    Ron,
 }
 
 impl fmt::Display for Format {
@@ -84,6 +103,9 @@ pub fn supported_formats() -> Vec<Format> {
     #[cfg(feature = "yaml")]
     f.push(Format::Yaml);
 
+    #[cfg(feature = "ron")]
+    f.push(Format::Ron);
+
     f
 }
 
@@ -100,6 +122,11 @@ pub fn supported_extensions() -> Vec<&'static str> {
     {
         e.push("yml");
         e.push("yaml");
+    }
+
+    #[cfg(feature = "ron")]
+    {
+        e.push("ron");
     }
 
     e
@@ -141,6 +168,8 @@ where
             reader.read_to_end(&mut s)?;
             Ok(toml::from_slice::<T>(&s)?)
         }
+        #[cfg(feature = "ron")]
+        Format::Ron => Ok(ron::de::from_reader::<_, T>(reader)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -158,6 +187,8 @@ where
         Format::Json => Ok(serde_json::from_str::<T>(s)?),
         #[cfg(feature = "toml")]
         Format::Toml => Ok(toml::from_str::<T>(s)?),
+        #[cfg(feature = "ron")]
+        Format::Ron => Ok(ron::de::from_str::<T>(s)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -189,6 +220,8 @@ where
         Format::Json => Ok(serde_json::from_slice::<T>(s)?),
         #[cfg(feature = "toml")]
         Format::Toml => Ok(toml::from_slice::<T>(s)?),
+        #[cfg(feature = "ron")]
+        Format::Ron => Ok(ron::de::from_bytes::<T>(s)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -242,7 +275,7 @@ where
     Err(Error::NoSuccessfulParse)
 }
 
-pub fn to_string<T: ?Sized>(value: &T, format: Format) -> Result<String, Error>
+pub fn to_string<T>(value: &T, format: Format) -> Result<String, Error>
 where
     T: Serialize,
 {
@@ -254,12 +287,14 @@ where
         Format::Json => Ok(serde_json::to_string(value)?),
         #[cfg(feature = "toml")]
         Format::Toml => Ok(toml::to_string(value)?),
+        #[cfg(feature = "ron")]
+        Format::Ron => Ok(ron::ser::to_string(value)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
 }
 
-pub fn to_vec<T: ?Sized>(value: &T, format: Format) -> Result<Vec<u8>, Error>
+pub fn to_vec<T>(value: &T, format: Format) -> Result<Vec<u8>, Error>
 where
     T: Serialize,
 {
@@ -271,12 +306,14 @@ where
         Format::Json => Ok(serde_json::to_vec(value)?),
         #[cfg(feature = "toml")]
         Format::Toml => Ok(toml::to_vec(value)?),
+        #[cfg(feature = "ron")]
+        Format::Toml => Ok(ron::ser::to_string(value)?.into_bytes()),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
 }
 
-pub fn to_writer<W, T: ?Sized>(mut writer: W, value: &T, format: Format) -> Result<(), Error>
+pub fn to_writer<W, T>(mut writer: W, value: &T, format: Format) -> Result<(), Error>
 where
     W: Write,
     T: Serialize,
@@ -291,6 +328,12 @@ where
         Format::Toml => {
             let s = toml::to_vec(value)?;
             writer.write(&s)?;
+            Ok(())
+        }
+        #[cfg(feature = "ron")]
+        Format::Ron => {
+            let s = ron::ser::to_string(value)?;
+            write!(&mut writer, "{}", s)?;
             Ok(())
         }
 
