@@ -147,6 +147,7 @@ pub fn guess_format_from_extension(ext: &str) -> Option<Format> {
         "yml" | "yaml" => Some(Format::Yaml),
         "json" => Some(Format::Json),
         "toml" => Some(Format::Toml),
+        "ron" => Some(Format::Ron),
         _ => None,
     }
 }
