@@ -1,3 +1,10 @@
+#![warn(missing_docs)]
+
+//! # Serde Any
+//!
+//! Dynamic serialization and deserialization with the format chosen at runtime
+//!
+
 #[macro_use]
 extern crate failure;
 extern crate serde;
@@ -23,36 +30,54 @@ use std::fmt;
 use serde::de::{Deserialize, DeserializeOwned};
 use serde::ser::Serialize;
 
+/// The common error type
 #[derive(Debug, Fail)]
 pub enum Error {
+    /// Error serializing or deserializing with JSON
     #[cfg(feature = "json")]
-    #[fail(display = "JSON error: {}", _0)] Json(#[fail(cause)] serde_json::Error),
+    #[fail(display = "JSON error: {}", _0)]
+    Json(#[fail(cause)] serde_json::Error),
 
+    /// Error serializing or deserializing with YAML
     #[cfg(feature = "yaml")]
-    #[fail(display = "YAML error: {}", _0)] Yaml(#[fail(cause)] serde_yaml::Error),
+    #[fail(display = "YAML error: {}", _0)]
+    Yaml(#[fail(cause)] serde_yaml::Error),
 
+    /// Error deserializing with TOML
     #[cfg(feature = "toml")]
     #[fail(display = "TOML deserialize error: {}", _0)]
     TomlDeserialize(#[fail(cause)] toml::de::Error),
 
+    /// Error serializing with TOML
     #[cfg(feature = "toml")]
     #[fail(display = "TOML serialize error: {}", _0)]
     TomlSerialize(#[fail(cause)] toml::ser::Error),
 
+    /// Error deserializing with RON
     #[cfg(feature = "ron")]
     #[fail(display = "RON deserialize error: {}", _0)]
     RonDeserialize(#[fail(cause)] ron::de::Error),
 
+    /// Error serializing with RON
     #[cfg(feature = "ron")]
-    #[fail(display = "RON serialize error: {}", _0)] RonSerialize(#[fail(cause)] ron::ser::Error),
+    #[fail(display = "RON serialize error: {}", _0)]
+    RonSerialize(#[fail(cause)] ron::ser::Error),
 
-    #[fail(display = "IO error: {}", _0)] Io(#[fail(cause)] std::io::Error),
+    /// IO error
+    #[fail(display = "IO error: {}", _0)]
+    Io(#[fail(cause)] std::io::Error),
 
-    #[fail(display = "Format {} not supported", _0)] UnsupportedFormat(Format),
+    /// The specified format is not supported
+    #[fail(display = "Format {} not supported", _0)]
+    UnsupportedFormat(Format),
 
-    #[fail(display = "File extension {} not supported", _0)] UnsupportedFileExtension(String),
+    /// The specified file extension is not supported
+    #[fail(display = "File extension {} not supported", _0)]
+    UnsupportedFileExtension(String),
 
-    #[fail(display = "No format was able to parse the source")] NoSuccessfulParse,
+    /// None of the supported formats was able to deserialize successfully
+    #[fail(display = "No format was able to parse the source")]
+    NoSuccessfulParse,
 }
 
 macro_rules! impl_error_from {
@@ -83,11 +108,16 @@ impl_error_from!(ron::ser::Error => Error::RonSerialize);
 #[cfg(feature = "ron")]
 impl_error_from!(ron::de::Error => Error::RonDeserialize);
 
+/// Serialization or deserialization formats
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Format {
+    /// TOML (Tom's Obvious, Minimal Language), enabled by the `toml` feature.
     Toml,
+    /// JSON (JavaScript Object Notation), enabled by the `json` feature.
     Json,
+    /// YAML (YAML Ain't Markup Language), enabled by the `yaml` feature.
     Yaml,
+    /// RON (Rusty Object Notation), enabled by the `ron` feature.
     Ron,
 }
 
@@ -98,6 +128,10 @@ impl fmt::Display for Format {
 }
 
 impl Format {
+    /// Checks whether this format is supported
+    ///
+    /// Support for different formats is controlled by the features used
+    /// when building serde_any.
     pub fn is_supported(&self) -> bool {
         #[allow(unreachable_patterns)]
         match self {
@@ -115,6 +149,10 @@ impl Format {
     }
 }
 
+/// Return a list of supported formats
+///
+/// Support for different formats is controlled by the features used
+/// when building serde_any.
 pub fn supported_formats() -> Vec<Format> {
     let mut f = Vec::new();
 
@@ -133,6 +171,10 @@ pub fn supported_formats() -> Vec<Format> {
     f
 }
 
+/// Return a list of recognized file extensions
+///
+/// The return value depends on the features used when building serde_any.
+/// Only file extensions corresponding to supported formats will be returned.
 pub fn supported_extensions() -> Vec<&'static str> {
     let mut e = Vec::new();
 
@@ -156,6 +198,9 @@ pub fn supported_extensions() -> Vec<&'static str> {
     e
 }
 
+/// Attempt to guess the serialization/deserialization format from a file name
+///
+/// This function may recognize and return a format even if it's not supported due to feature flags.
 pub fn guess_format<P>(path: P) -> Option<Format>
 where
     P: AsRef<Path>,
@@ -166,6 +211,9 @@ where
         .and_then(guess_format_from_extension)
 }
 
+/// Attempt to guess the serialization/deserialization format from a file extension
+///
+/// This function may recognize and return a format even if it's not supported due to feature flags.
 pub fn guess_format_from_extension(ext: &str) -> Option<Format> {
     match ext {
         "yml" | "yaml" => Some(Format::Yaml),
@@ -176,6 +224,54 @@ pub fn guess_format_from_extension(ext: &str) -> Option<Format> {
     }
 }
 
+/// Deserialize from an IO stream using a specified format
+///
+/// # Errors
+///
+/// If the specified format is not supported, this function returns
+/// `Error::UnsupportedFormat`.
+///
+/// If the conversion itself fails, the format-specific variant of `Error`
+/// will be returned, with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use failure::Error;
+/// use std::fs::File;
+/// use std::path::Path;
+///
+/// use serde_any::Format;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct User {
+///     fingerprint: String,
+///     location: String,
+/// }
+///
+/// fn read_user_from_file<P: AsRef<Path>>(path: P, format: Format) -> Result<User, Error> {
+///     // Open the file in read-only mode.
+///     let file = File::open(path)?;
+///
+///     // Read the contents of the file as an instance of `User`.
+///     let u = serde_any::from_reader(file, format)?;
+///
+///     // Return the `User`.
+///     Ok(u)
+/// }
+///
+/// fn main() {
+///     match read_user_from_file("test.json", Format::Json) {
+///         Ok(u) => println!("{:#?}", u),
+///         Err(e) => println!("Error deserializing user: {}", e),
+///     };
+/// }
+/// ```
 #[allow(unreachable_patterns, unused_mut)]
 pub fn from_reader<T, R>(mut reader: R, format: Format) -> Result<T, Error>
 where
@@ -200,6 +296,45 @@ where
     }
 }
 
+
+/// Deserialize from a string using a specified format
+///
+/// # Errors
+///
+/// If the specified format is not supported, this function returns
+/// `Error::UnsupportedFormat`.
+///
+/// If the conversion itself fails, the format-specific variant of `Error`
+/// will be returned, with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use failure::Error;
+///
+/// use serde_any::Format;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let data = "{
+///         \"name\": \"Jon Snow\",
+///         \"knowledge\": 0
+///     }";
+///     let person: Person = serde_any::from_str(data, Format::Json)?;
+///     println!("{:#?}", person);
+///     Ok(())
+/// }
+/// ```
 pub fn from_str<'a, T>(s: &'a str, format: Format) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -219,6 +354,44 @@ where
     }
 }
 
+/// Deserialize from a string using any supported format
+///
+/// This function will attempt to deserialize the string using each supported format,
+/// and will return the result of the first successful deserialization.
+///
+/// # Errors
+///
+/// If none of the supported formats can deserialize the string successfully,
+/// `Error::NoSuccessfulParse` is returned.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use failure::Error;
+///
+/// use serde_any::Format;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let data = "{
+///         \"name\": \"Jon Snow\",
+///         \"knowledge\": 0
+///     }";
+///     let person: Person = serde_any::from_str_any(data)?;
+///     println!("{:#?}", person);
+///     Ok(())
+/// }
+/// ```
 pub fn from_str_any<'a, T>(s: &'a str) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -233,6 +406,44 @@ where
     Err(Error::NoSuccessfulParse)
 }
 
+/// Deserialize from a byte slice using a specified format
+///
+/// This function will attempt to deserialize the string using each supported format,
+/// and will return the result of the first successful deserialization.
+///
+/// # Errors
+///
+/// If none of the supported formats can deserialize the string successfully,
+/// `Error::NoSuccessfulParse` is returned.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use failure::Error;
+///
+/// use serde_any::Format;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let data = b"{
+///         \"name\": \"Jon Snow\",
+///         \"knowledge\": 0
+///     }";
+///     let person: Person = serde_any::from_slice(data, Format::Json)?;
+///     println!("{:#?}", person);
+///     Ok(())
+/// }
+/// ```
 pub fn from_slice<'a, T>(s: &'a [u8], format: Format) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -252,6 +463,44 @@ where
     }
 }
 
+/// Deserialize from a byte slice using any supported format
+///
+/// # Errors
+///
+/// If the specified format is not supported, this function returns
+/// `Error::UnsupportedFormat`.
+///
+/// If the conversion itself fails, the format-specific variant of `Error`
+/// will be returned, with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use failure::Error;
+///
+/// use serde_any::Format;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let data = b"{
+///         \"name\": \"Jon Snow\",
+///         \"knowledge\": 0
+///     }";
+///     let person: Person = serde_any::from_slice_any(data)?;
+///     println!("{:#?}", person);
+///     Ok(())
+/// }
+/// ```
 pub fn from_slice_any<'a, T>(s: &'a [u8]) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
