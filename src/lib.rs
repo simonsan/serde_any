@@ -515,6 +515,44 @@ where
     Err(Error::NoSuccessfulParse)
 }
 
+/// Deserialize from a file
+///
+/// The format is detected using `guess_format`.
+/// If that fails, such as if the file extension is not recognized,
+/// the whole file is read into a buffer,
+/// and deserialization is attempted using `from_slice_any`.
+///
+/// # Errors
+///
+/// If the file extension is recognized, but parsing fails, this function returns
+/// the error from `from_reader`.
+///
+/// If the file extension is not recognized and the file cannot be opened,
+/// it returns `Error::Io` with the underlying error as the cause.
+///
+/// If the file extension is not recognized, the file can opened but deserialization fails,
+/// this function returns the error from `from_slice_any`.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct User {
+///     fingerprint: String,
+///     location: String,
+/// }
+///
+/// fn main() {
+///     match serde_any::from_file::<User, _>("test.json") {
+///         Ok(u) => println!("{:#?}", u),
+///         Err(e) => println!("Error deserializing user: {}", e),
+///     };
+/// }
+/// ```
 pub fn from_file<T, P>(path: P) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -534,6 +572,38 @@ where
     }
 }
 
+/// Deserialize from any file with a given stem
+///
+/// This function tries to deserialize from any file with stem `stem` and any of the supported extensions.
+/// The list of supported extensions can be queried with `supported_extensions`.
+///
+/// # Errors
+///
+/// If none of the supported formats can deserialize the string successfully,
+/// `Error::NoSuccessfulParse` is returned.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+///
+/// #[derive(Deserialize, Debug)]
+/// struct User {
+///     fingerprint: String,
+///     location: String,
+/// }
+///
+/// fn main() {
+///     // Will attempt "user.json", "user.yaml", "user.toml" and "user.ron"
+///     // If any of the features is disabled, that extension is skipped
+///     match serde_any::from_file_stem::<User, _>("user") {
+///         Ok(u) => println!("{:#?}", u),
+///         Err(e) => println!("Error deserializing user: {}", e),
+///     };
+/// }
+/// ```
 pub fn from_file_stem<T, P>(stem: P) -> Result<T, Error>
 where
     T: DeserializeOwned,
