@@ -97,6 +97,24 @@ impl fmt::Display for Format {
     }
 }
 
+impl Format {
+    pub fn is_supported(&self) -> bool {
+        #[allow(unreachable_patterns)]
+        match self {
+            #[cfg(feature = "toml")]
+            Format::Toml => true,
+            #[cfg(feature = "json")]
+            Format::Json => true,
+            #[cfg(feature = "yaml")]
+            Format::Yaml => true,
+            #[cfg(feature = "ron")]
+            Format::Ron => true,
+
+            _ => false,
+        }
+    }
+}
+
 pub fn supported_formats() -> Vec<Format> {
     let mut f = Vec::new();
 
