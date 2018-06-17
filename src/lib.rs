@@ -7,10 +7,11 @@
 //! # Deserialization with a known type
 //!
 //! If the deserialization format is known in advance, `serde_any` mirrors the API of `serde_json` and `serde_yaml`.
-//! Namely, functions `from_reader`, `from_slice` and `from_str` function in the same way as those in format-specific
-//! crates, except that they take an additional `Format` paramater specifying the deserialization format.
-//! The `from_file` function is provided as a convenience wrapper around `from_reader` for the common case of
-//! reading from a file.
+//! Namely, functions [`from_reader`](fn.from_reader.html), [`from_slice`](fn.from_slice.html) and
+//! [`from_str`](fn.from_str.html) work in the same way as those in format-specific crates, except that they take an
+//! additional [`Format`](enum.Format.html) paramater specifying the deserialization format. The
+//! [`from_file`](fn.from_file.html) function is provided as a convenience wrapper around
+//! [`from_reader`](fn.from_reader.html) for the common case of reading from a file.
 //!
 //! # Deserialization with a known type
 //!
@@ -339,8 +340,8 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = "{
-///     \"name\": \"Jon Snow\",
-///     \"knowledge\": 0
+/// \"name\": \"Jon Snow\",
+/// \"knowledge\": 0
 /// }";
 ///     let person: Person = serde_any::from_str(data, Format::Json)?;
 ///     println!("{:#?}", person);
@@ -396,8 +397,8 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = "{
-///     \"name\": \"Jon Snow\",
-///     \"knowledge\": 0
+/// \"name\": \"Jon Snow\",
+/// \"knowledge\": 0
 /// }";
 ///     let person: Person = serde_any::from_str_any(data)?;
 ///     println!("{:#?}", person);
@@ -448,8 +449,8 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = b"{
-///     \"name\": \"Jon Snow\",
-///     \"knowledge\": 0
+/// \"name\": \"Jon Snow\",
+/// \"knowledge\": 0
 /// }";
 ///     let person: Person = serde_any::from_slice(data, Format::Json)?;
 ///     println!("{:#?}", person);
@@ -505,8 +506,8 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = b"{
-///     \"name\": \"Jon Snow\",
-///     \"knowledge\": 0
+/// \"name\": \"Jon Snow\",
+/// \"knowledge\": 0
 /// }";
 ///     let person: Person = serde_any::from_slice_any(data)?;
 ///     println!("{:#?}", person);
