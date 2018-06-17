@@ -25,19 +25,25 @@ use serde::ser::Serialize;
 
 #[derive(Debug, Fail)]
 pub enum Error {
+    #[cfg(feature = "json")]
     #[fail(display = "JSON error: {}", _0)] Json(#[fail(cause)] serde_json::Error),
 
+    #[cfg(feature = "yaml")]
     #[fail(display = "YAML error: {}", _0)] Yaml(#[fail(cause)] serde_yaml::Error),
 
+    #[cfg(feature = "toml")]
     #[fail(display = "TOML deserialize error: {}", _0)]
     TomlDeserialize(#[fail(cause)] toml::de::Error),
 
+    #[cfg(feature = "toml")]
     #[fail(display = "TOML serialize error: {}", _0)]
     TomlSerialize(#[fail(cause)] toml::ser::Error),
 
+    #[cfg(feature = "ron")]
     #[fail(display = "RON deserialize error: {}", _0)]
     RonDeserialize(#[fail(cause)] ron::de::Error),
 
+    #[cfg(feature = "ron")]
     #[fail(display = "RON serialize error: {}", _0)] RonSerialize(#[fail(cause)] ron::ser::Error),
 
     #[fail(display = "IO error: {}", _0)] Io(#[fail(cause)] std::io::Error),
@@ -152,12 +158,12 @@ pub fn guess_format_from_extension(ext: &str) -> Option<Format> {
     }
 }
 
+#[allow(unreachable_patterns, unused_mut)]
 pub fn from_reader<T, R>(mut reader: R, format: Format) -> Result<T, Error>
 where
     T: DeserializeOwned,
     R: Read,
 {
-    #[allow(unreachable_patterns)]
     match format {
         #[cfg(feature = "yaml")]
         Format::Yaml => Ok(serde_yaml::from_reader::<_, T>(reader)?),
@@ -276,6 +282,7 @@ where
     Err(Error::NoSuccessfulParse)
 }
 
+#[allow(unused_mut)]
 pub fn to_string<T>(value: &T, format: Format) -> Result<String, Error>
 where
     T: Serialize,
@@ -314,6 +321,7 @@ where
     }
 }
 
+#[allow(unused_mut)]
 pub fn to_writer<W, T>(mut writer: W, value: &T, format: Format) -> Result<(), Error>
 where
     W: Write,
