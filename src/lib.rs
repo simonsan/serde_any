@@ -4,6 +4,19 @@
 //!
 //! Dynamic serialization and deserialization with the format chosen at runtime
 //!
+//! # Deserialization with a known type
+//!
+//! If the deserialization format is known in advance, `serde_any` mirrors the API of `serde_json` and `serde_yaml`.
+//! Namely, functions `from_reader`, `from_slice` and `from_str` function in the same way as those in format-specific
+//! crates, except that they take an additional `Format` paramater specifying the deserialization format.
+//! The `from_file` function is provided as a convenience wrapper around `from_reader` for the common case of
+//! reading from a file.
+//!
+//! # Deserialization with a known type
+//!
+//! If the deserialization format is known in advance, `serde_any` mirrors the API of `serde_json` and `serde_yaml`.
+//! Namely, functions `from_reader`, `from_slice` and `from_str` function in the same way as those in format-specific
+//! crates, except that they take an additional `Format` paramater specifying the deserialization format.
 
 #[macro_use]
 extern crate failure;
@@ -296,7 +309,6 @@ where
     }
 }
 
-
 /// Deserialize from a string using a specified format
 ///
 /// # Errors
@@ -327,9 +339,9 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = "{
-///         \"name\": \"Jon Snow\",
-///         \"knowledge\": 0
-///     }";
+///     \"name\": \"Jon Snow\",
+///     \"knowledge\": 0
+/// }";
 ///     let person: Person = serde_any::from_str(data, Format::Json)?;
 ///     println!("{:#?}", person);
 ///     Ok(())
@@ -384,9 +396,9 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = "{
-///         \"name\": \"Jon Snow\",
-///         \"knowledge\": 0
-///     }";
+///     \"name\": \"Jon Snow\",
+///     \"knowledge\": 0
+/// }";
 ///     let person: Person = serde_any::from_str_any(data)?;
 ///     println!("{:#?}", person);
 ///     Ok(())
@@ -436,9 +448,9 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = b"{
-///         \"name\": \"Jon Snow\",
-///         \"knowledge\": 0
-///     }";
+///     \"name\": \"Jon Snow\",
+///     \"knowledge\": 0
+/// }";
 ///     let person: Person = serde_any::from_slice(data, Format::Json)?;
 ///     println!("{:#?}", person);
 ///     Ok(())
@@ -493,9 +505,9 @@ where
 ///
 /// fn main() -> Result<(), Error> {
 ///     let data = b"{
-///         \"name\": \"Jon Snow\",
-///         \"knowledge\": 0
-///     }";
+///     \"name\": \"Jon Snow\",
+///     \"knowledge\": 0
+/// }";
 ///     let person: Person = serde_any::from_slice_any(data)?;
 ///     println!("{:#?}", person);
 ///     Ok(())
