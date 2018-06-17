@@ -4,3 +4,15 @@ test:cargo:
   script:
   - rustc --version && cargo --version
   - cargo test --all
+
+test:features:
+  script:
+  - rustc --version && cargo --version
+  - cargo build --no-default-features
+  - cargo build --no-default-features --features=json
+  - cargo build --no-default-features --features=yaml
+  - cargo build --no-default-features --features=toml
+  - cargo build --no-default-features --features=ron
+  - cargo build --no-default-features --features="json, yaml"
+  - cargo build --no-default-features --features="toml, ron"
+  - cargo build --no-default-features --features="json, yaml, toml, ron"
