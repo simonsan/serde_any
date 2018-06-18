@@ -7,6 +7,7 @@ description = "Dynamic serialization and deserialization with the format chosen 
 repository = "https://gitlab.com/Noughmad/serde_any"
 keywords = ["serde", "serialization", "json", "toml", "yaml"]
 categories = ["encoding"]
+readme = "README.md"
 
 [badges]
 gitlab = { repository = "Noughmad/serde_any", branch = "master" }
