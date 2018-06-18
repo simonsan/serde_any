@@ -22,7 +22,7 @@
 //! * with [`from_file_stem`](fn.from_file_stem.html), each filename with the given stem and a supported extension
 //!   is checked. If any such file exists, its data is deserialized and returned.
 //!   This is useful for configuration files with a known set of filenames.
-//! * with [`from_slice_any`](fn.from_slice_any.html) and [`from_str_any`](fn.from_slice_any.html), deserialization
+//! * with [`from_slice_any`](fn.from_slice_any.html) and [`from_str_any`](fn.from_str_any.html), deserialization
 //!   using each supported format is tried until one succeeds.
 //!   This is useful when you receive data from an unknown source and don't know what format it is in.
 //!
@@ -34,8 +34,8 @@
 //!
 //! For serialization, the data format must always be provided.
 //! Consistent with the format-specific crates, data may be serialized to a `String` with
-//! [`to_string`](fn.to_string.html), to a `Vec<u8>` with [`to_vec`](fn.to_string.html), or to a `std::io::Write` with
-//! [`to_writer`](fn.to_string.html).
+//! [`to_string`](fn.to_string.html), to a `Vec<u8>` with [`to_vec`](fn.to_vec.html), or to a `std::io::Write` with
+//! [`to_writer`](fn.to_writer.html).
 //!
 //! Alternatively, when writing to a file, the format can be inferred from the file name by the
 //! [`to_file`](fn.to_file.html) function. Similarly to [`from_file`](fn.from_file.html), this is most useful when
