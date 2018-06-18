@@ -4,7 +4,7 @@
 //!
 //! Dynamic serialization and deserialization with the format chosen at runtime
 //!
-//! # Deserialization with a known type
+//! ## Deserialization with a known format
 //!
 //! If the deserialization format is known in advance, `serde_any` mirrors the API of `serde_json` and `serde_yaml`.
 //! Namely, functions [`from_reader`](fn.from_reader.html), [`from_slice`](fn.from_slice.html) and
@@ -13,11 +13,36 @@
 //! [`from_file`](fn.from_file.html) function is provided as a convenience wrapper around
 //! [`from_reader`](fn.from_reader.html) for the common case of reading from a file.
 //!
-//! # Deserialization with a known type
+//! ## Deserialization by guessing
 //!
-//! If the deserialization format is known in advance, `serde_any` mirrors the API of `serde_json` and `serde_yaml`.
-//! Namely, functions `from_reader`, `from_slice` and `from_str` function in the same way as those in format-specific
-//! crates, except that they take an additional `Format` paramater specifying the deserialization format.
+//! This crate also supports deserialization where the data format is not known in advance.
+//! There are three different ways of inferring the data format:
+//! * with [`from_file`](fn.from_file.html), the format is deduced from the file extension.
+//!   This is useful if a user can load a data file of any format.
+//! * with [`from_file_stem`](fn.from_file_stem.html), each filename with the given stem and a supported extension
+//!   is checked. If any such file exists, its data is deserialized and returned.
+//!   This is useful for configuration files with a known set of filenames.
+//! * with [`from_slice_any`](fn.from_slice_any.html) and [`from_str_any`](fn.from_slice_any.html), deserialization
+//!   using each supported format is tried until one succeeds.
+//!   This is useful when you receive data from an unknown source and don't know what format it is in.
+//!
+//! Note there is no corresponding `from_reader_any` function, as attempting to deserialize from a reader would
+//! consume its data. In order to deserialize from a `std::io::Read`, read the data into a `Vec<u8>` or `String` and
+//! call [`from_slice_any`](fn.from_slice_any) or [`from_str_any`](fn.from_str_any.html).
+//!
+//! ## Serialization
+//!
+//! For serialization, the data format must always be provided.
+//! Consistent with the format-specific crates, data may be serialized to a `String` with
+//! [`to_string`](fn.to_string.html), to a `Vec<u8>` with [`to_vec`](fn.to_string.html), or to a `std::io::Write` with
+//! [`to_writer`](fn.to_string.html).
+//!
+//! Alternatively, when writing to a file, the format can be inferred from the file name by the
+//! [`to_file`](fn.to_file.html) function. Similarly to [`from_file`](fn.from_file.html), this is most useful when
+//! saving to a user-selected file.
+//!
+//! There is no support for pretty-printing yet.
+//!
 
 #[macro_use]
 extern crate failure;
@@ -145,7 +170,7 @@ impl Format {
     /// Checks whether this format is supported
     ///
     /// Support for different formats is controlled by the features used
-    /// when building serde_any.
+    /// when building `serde_any`.
     pub fn is_supported(&self) -> bool {
         #[allow(unreachable_patterns)]
         match self {
@@ -166,7 +191,7 @@ impl Format {
 /// Return a list of supported formats
 ///
 /// Support for different formats is controlled by the features used
-/// when building serde_any.
+/// when building `serde_any`.
 pub fn supported_formats() -> Vec<Format> {
     let mut f = Vec::new();
 
@@ -632,6 +657,41 @@ where
     Err(Error::NoSuccessfulParse)
 }
 
+/// Serialize to a `String`
+///
+/// # Errors
+///
+/// If serialization fails, the format-specific error type is returned,
+/// with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use serde_any::Format;
+/// use failure::Error;
+///
+/// #[derive(Serialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let bran = Person {
+///         name: "Brandon Stark".to_string(),
+///         knowledge: 100,
+///     };
+///     let data = serde_any::to_string(&bran, Format::Toml)?;
+///     println!("{}", data);
+///     assert_eq!(&data[..], "name = \"Brandon Stark\"\nknowledge = 100\n");
+///     Ok(())
+/// }
+/// ```
 #[allow(unused_mut)]
 pub fn to_string<T>(value: &T, format: Format) -> Result<String, Error>
 where
@@ -652,6 +712,43 @@ where
     }
 }
 
+/// Serialize to a byte vector
+///
+/// # Errors
+///
+/// If serialization fails, the format-specific error type is returned,
+/// with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use serde_any::Format;
+/// use failure::Error;
+///
+/// #[derive(Serialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let bran = Person {
+///         name: "Brandon Stark".to_string(),
+///         knowledge: 100,
+///     };
+///     let data = serde_any::to_vec(&bran, Format::Toml)?;
+///     assert_eq!(
+///         data,
+///         b"name = \"Brandon Stark\"\nknowledge = 100\n".to_vec()
+///     );
+///     Ok(())
+/// }
+/// ```
 pub fn to_vec<T>(value: &T, format: Format) -> Result<Vec<u8>, Error>
 where
     T: Serialize,
@@ -671,6 +768,42 @@ where
     }
 }
 
+/// Serialize to a writer
+///
+/// # Errors
+///
+/// If serialization fails, the format-specific error type is returned,
+/// with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use serde_any::Format;
+/// use failure::Error;
+///
+/// use std::fs::File;
+///
+/// #[derive(Serialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let bran = Person {
+///         name: "Brandon Stark".to_string(),
+///         knowledge: 100,
+///     };
+///     let file = File::create("weirwood.ron")?;
+///     let data = serde_any::to_writer(file, &bran, Format::Ron)?;
+///     Ok(())
+/// }
+/// ```
 #[allow(unused_mut)]
 pub fn to_writer<W, T>(mut writer: W, value: &T, format: Format) -> Result<(), Error>
 where
@@ -697,6 +830,64 @@ where
         }
 
         _ => Err(Error::UnsupportedFormat(format)),
+    }
+}
+
+/// Serialize to a file
+///
+/// # Errors
+///
+/// If the serialization format cannot be inferred from the file name,
+/// `UnsupportedFileExtension` is returned.
+///
+/// If serialization fails, the format-specific error type is returned,
+/// with the underlying error as its cause.
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate serde;
+/// extern crate serde_any;
+/// extern crate failure;
+///
+/// use serde_any::Format;
+/// use failure::Error;
+///
+/// use std::fs::File;
+///
+/// #[derive(Serialize, Debug)]
+/// struct Person {
+///     name: String,
+///     knowledge: u32,
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let bran = Person {
+///         name: "Brandon Stark".to_string(),
+///         knowledge: 100,
+///     };
+///     serde_any::to_file("bran.yaml", &bran)?;
+///     Ok(())
+/// }
+/// ```
+pub fn to_file<T, P>(path: P, value: &T) -> Result<(), Error>
+where
+    T: Serialize,
+    P: AsRef<Path>,
+{
+    let format = guess_format(&path);
+
+    match format {
+        Some(format) => to_writer(File::create(path)?, value, format),
+        None => {
+            let ext = path.as_ref()
+                .extension()
+                .and_then(OsStr::to_str)
+                .map(String::from)
+                .unwrap_or(String::new());
+            Err(Error::UnsupportedFileExtension(ext))
+        }
     }
 }
 
