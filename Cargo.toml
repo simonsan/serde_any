@@ -25,3 +25,6 @@ serde_json = { version = "1", optional = true }
 serde_yaml = { version = "0.7", optional = true }
 ron = { version = "0.3", optional = true }
 failure = "0.1.1"
+
+[dev-dependencies]
+serde_derive = "1"

@@ -60,6 +60,10 @@ extern crate serde_yaml;
 #[cfg(feature = "ron")]
 extern crate ron;
 
+#[cfg(test)]
+#[macro_use]
+extern crate serde_derive;
+
 use std::path::Path;
 use std::ffi::OsStr;
 use std::io::{Read, Write};
@@ -762,7 +766,7 @@ where
         #[cfg(feature = "toml")]
         Format::Toml => Ok(toml::to_vec(value)?),
         #[cfg(feature = "ron")]
-        Format::Toml => Ok(ron::ser::to_string(value)?.into_bytes()),
+        Format::Ron => Ok(ron::ser::to_string(value)?.into_bytes()),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -904,6 +908,59 @@ mod tests {
             assert!(from_ext.is_some());
             assert!(from_path.is_some());
             assert_eq!(from_ext, from_path);
+        }
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+    struct Wizard {
+        name: String,
+        is_late: bool,
+        color: String,
+        age: u32,
+        friends: Vec<String>,
+    }
+
+    #[test]
+    fn to_vec_and_back_and_to_vec_again() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "Grey".to_string(),
+            is_late: false,
+            age: 9000,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
+        for format in formats {
+            assert!(format.is_supported());
+
+            let gandalf_the_serialized = to_vec(&gandalf, format).unwrap();
+            let gandalf_the_deserialized: Wizard = from_slice(&gandalf_the_serialized, format).unwrap();
+            assert_eq!(gandalf_the_deserialized, gandalf);
+            let gandalf_the_serialized_again = to_vec(&gandalf_the_deserialized, format).unwrap();
+            assert_eq!(gandalf_the_serialized_again, gandalf_the_serialized);
+        }
+    }
+
+    #[test]
+    fn to_string_and_back_and_to_string_again() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "White".to_string(),
+            is_late: false,
+            age: 9001,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
+        for format in formats {
+            assert!(format.is_supported());
+
+            let gandalf_the_serialized = to_string(&gandalf, format).unwrap();
+            let gandalf_the_deserialized: Wizard = from_str(&gandalf_the_serialized, format).unwrap();
+            assert_eq!(gandalf_the_deserialized, gandalf);
+            let gandalf_the_serialized_again = to_string(&gandalf_the_deserialized, format).unwrap();
+            assert_eq!(gandalf_the_serialized_again, gandalf_the_serialized);
         }
     }
 }
