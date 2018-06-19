@@ -1,9 +1,13 @@
 image: "rust:latest"
 
 test:cargo:
+  before_script:
+  - RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin
   script:
   - rustc --version && cargo --version
   - cargo test --all
+  - cargo tarpaulin --out Xml
+  - "bash <(curl -s https://codecov.io/bash)"
 
 test:features:
   script:
