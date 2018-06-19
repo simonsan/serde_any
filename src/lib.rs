@@ -963,4 +963,66 @@ mod tests {
             assert_eq!(gandalf_the_serialized_again, gandalf_the_serialized);
         }
     }
+
+    fn radagast() -> Wizard {
+        Wizard {
+            name: "Radagast".to_string(),
+            color: "Brown".to_string(),
+            is_late: true,
+            age: 8000,
+            friends: vec!["animals".to_string()],
+        }
+    }
+
+    fn assert_deserialized_any(expected: &Wizard, s: &str) {
+        let deserialized: Wizard = from_str_any(s).unwrap();
+        assert_eq!(&deserialized, expected);
+
+        let deserialized_from_bytes: Wizard = from_slice_any(s.as_bytes()).unwrap();
+        assert_eq!(&deserialized_from_bytes, expected);
+    }
+
+    #[test]
+    fn guess_from_json() {
+        let s = r#"{"name": "Radagast", "color": "Brown", "is_late": true, "age": 8000, friends: ["animals"]}"#;
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    #[should_panic]
+    fn guess_from_json_fail() {
+        let s = r#"{"name" = "Radagast", "color": "Brown", "is_late": true, "age": 8000, friends: ["animals"],}"#;
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_yaml_inline() {
+        let s = r#"{name: Radagast, color: Brown, is_late: true, age: 8000, friends: [animals]}"#;
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_yaml_long() {
+        let s = "name: Radagast\ncolor: Brown\nis_late: true\nage: 8000\nfriends:\n- animals\n";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    #[should_panic]
+    fn guess_from_yaml_long_fail() {
+        let s = "name: Radagast\ncolor: Brown\nis_late: true\nage: 8000\nfriends:\nanimals\n";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_toml() {
+        let s = "name = \"Radagast\"\ncolor = \"Brown\"\nis_late = true\nage = 8000\nfriends = [\n  \"animals\",\n]\n";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_ron() {
+        let s = "Wizard (name: \"Radagast\", color: \"Brown\", is_late: true, age: 8000, friends: [\"animals\",],)";
+        assert_deserialized_any(&radagast(), s);
+    }
 }
