@@ -804,6 +804,7 @@ where
 ///         knowledge: 100,
 ///     };
 ///     let file = File::create("weirwood.ron")?;
+///     std::fs::remove_file("weirwood.ron").unwrap();
 ///     let data = serde_any::to_writer(file, &bran, Format::Ron)?;
 ///     Ok(())
 /// }
@@ -872,6 +873,7 @@ where
 ///         knowledge: 100,
 ///     };
 ///     serde_any::to_file("bran.yaml", &bran)?;
+///     # std::fs::remove_file("bran.yaml").unwrap();
 ///     Ok(())
 /// }
 /// ```
@@ -898,6 +900,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Cursor;
+    use std::fs::remove_file;
 
     #[test]
     fn extensions() {
@@ -961,6 +965,55 @@ mod tests {
             assert_eq!(gandalf_the_deserialized, gandalf);
             let gandalf_the_serialized_again = to_string(&gandalf_the_deserialized, format).unwrap();
             assert_eq!(gandalf_the_serialized_again, gandalf_the_serialized);
+        }
+    }
+
+    #[test]
+    fn to_cursor_and_back_again() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "White".to_string(),
+            is_late: false,
+            age: 9001,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
+        for format in formats {
+            assert!(format.is_supported());
+
+            let mut v: Vec<u8> = Vec::new();
+            to_writer(Cursor::new(&mut v), &gandalf, format).unwrap();
+
+            let gandalf_the_deserialized_from_reader: Wizard = from_reader(Cursor::new(&mut v), format).unwrap();
+            assert_eq!(gandalf_the_deserialized_from_reader, gandalf);
+
+            let gandalf_the_deserialized_from_slice: Wizard = from_slice(&v, format).unwrap();
+            assert_eq!(gandalf_the_deserialized_from_slice, gandalf);
+
+            let gandalf_the_deserialized_from_slice_any: Wizard = from_slice_any(&v).unwrap();
+            assert_eq!(gandalf_the_deserialized_from_slice_any, gandalf);
+        }
+    }
+
+    #[test]
+    fn to_file_and_back_again() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "White".to_string(),
+            is_late: false,
+            age: 9001,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        let extensions = vec!["json", "toml", "yaml", "ron"];
+        let stem = Path::new("gandalf");
+        for ext in extensions {
+            let file_name = stem.with_extension(ext);
+            to_file(&file_name, &gandalf).unwrap();
+            let gandalf_the_deserialized: Wizard = from_file(&file_name).unwrap();
+            remove_file(&file_name).unwrap();
+            assert_eq!(gandalf_the_deserialized, gandalf);
         }
     }
 
