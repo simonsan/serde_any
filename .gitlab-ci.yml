@@ -2,6 +2,8 @@ image: "rust:latest"
 
 test:cargo:
   before_script:
+  - apt-get update -yqq
+  - apt-get install -yqq --no-install-recommends build-essential cmake pkg-config libssl-dev
   - RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin
   script:
   - rustc --version && cargo --version
