@@ -1078,4 +1078,145 @@ mod tests {
         let s = "Wizard (name: \"Radagast\", color: \"Brown\", is_late: true, age: 8000, friends: [\"animals\",],)";
         assert_deserialized_any(&radagast(), s);
     }
+
+    macro_rules! assert_pattern {
+        ($value:expr, $pattern:pat, $message:expr) => {
+            match $value {
+                $pattern => {},
+                r => panic!("Expected {}, got result {:?}", $message, r),
+            }
+        }
+    }
+
+    #[test]
+    fn test_assert_pattern_success() {
+        let e: Result<(), Error> = Err(Error::NoSuccessfulParse);
+        assert_pattern!(e, Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_assert_pattern_panic() {
+        let e: Result<(), Error> = Ok(());
+        assert_pattern!(e, Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+    }
+
+    #[test]
+    fn invalid_data() {
+        let s = "invalid {} data [] that cannot <> be parsed by any format !!";
+
+        assert_pattern!(from_str_any::<Wizard>(&s), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        assert_pattern!(from_slice_any::<Wizard>(s.as_bytes()), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+    }
+
+    #[test]
+    fn invalid_field_names() {
+        let s = "name: Radagast\ncolor: Brown\nis_late: never\nage: 8000\n";
+
+        assert_pattern!(from_str_any::<Wizard>(&s), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        assert_pattern!(from_slice_any::<Wizard>(s.as_bytes()), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+    }
+
+    #[test]
+    fn valid_but_unknown_extension() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "White".to_string(),
+            is_late: false,
+            age: 9001,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        let json = to_vec(&gandalf, Format::Json).unwrap();
+        let file_name = "gandalf.dat";
+        {
+            let mut file = File::create(file_name).unwrap();
+            file.write(&json).unwrap();
+        }
+
+        {
+            let gandalf_the_deserialized: Wizard = from_file(file_name).unwrap();
+            assert_eq!(gandalf_the_deserialized, gandalf);
+        }
+
+        remove_file(file_name).unwrap();
+    }
+
+    #[test]
+    fn valid_file_stem() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "White".to_string(),
+            is_late: false,
+            age: 9001,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        for ext in supported_extensions() {
+            let file_name = Path::new("gandalf").with_extension(ext);
+            to_file(&file_name, &gandalf).unwrap();
+
+            let gandalf_the_deserialized: Wizard = from_file_stem("gandalf").unwrap();
+            assert_eq!(gandalf_the_deserialized, gandalf);
+
+            remove_file(&file_name).unwrap();
+        }
+    }
+
+    #[test]
+    fn unknown_extension_write() {
+        let gandalf = Wizard {
+            name: "Gandalf".to_string(),
+            color: "White".to_string(),
+            is_late: false,
+            age: 9001,
+            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+        };
+
+        let file_name = "gandalf.dat";
+        assert_pattern!(to_file(file_name, &gandalf), Err(Error::UnsupportedFileExtension(_)), "Error::UnsupportedFileExtension");
+        remove_file(file_name).ok();
+    }
+
+    #[test]
+    fn non_existing_file() {
+        assert_pattern!(from_file::<Wizard, _>("no_such_file.json"), Err(Error::Io(_)), "Error::Io");
+        assert_pattern!(from_file::<Wizard, _>("no_such_file.yaml"), Err(Error::Io(_)), "Error::Io");
+        assert_pattern!(from_file::<Wizard, _>("no_such_file.toml"), Err(Error::Io(_)), "Error::Io");
+        assert_pattern!(from_file::<Wizard, _>("no_such_file.ron"), Err(Error::Io(_)), "Error::Io");
+    }
+
+    #[test]
+    fn non_existing_file_stem() {
+        assert_pattern!(from_file_stem::<Wizard, _>("no_such_file_stem"), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+    }
+
+    #[test]
+    fn empty_input_str() {
+        let s = "";
+
+        assert_pattern!(from_str::<Wizard>(s, Format::Json), Err(Error::Json(_)), "Error::Json");
+        assert_pattern!(from_str::<Wizard>(s, Format::Yaml), Err(Error::Yaml(_)), "Error::Yaml");
+        assert_pattern!(from_str::<Wizard>(s, Format::Toml), Err(Error::TomlDeserialize(_)), "Error::TomlDeserialize");
+        assert_pattern!(from_str::<Wizard>(s, Format::Ron), Err(Error::RonDeserialize(_)), "Error::RonDeserialize");
+    }
+
+    #[test]
+    fn empty_input_bytes() {
+        let s = b"";
+
+        assert_pattern!(from_slice::<Wizard>(s, Format::Json), Err(Error::Json(_)), "Error::Json");
+        assert_pattern!(from_slice::<Wizard>(s, Format::Yaml), Err(Error::Yaml(_)), "Error::Yaml");
+        assert_pattern!(from_slice::<Wizard>(s, Format::Toml), Err(Error::TomlDeserialize(_)), "Error::TomlDeserialize");
+        assert_pattern!(from_slice::<Wizard>(s, Format::Ron), Err(Error::RonDeserialize(_)), "Error::RonDeserialize");
+    }
+
+    #[test]
+    fn display_format() {
+        let formats = vec![(Format::Json, "Json"), (Format::Toml, "Toml"), (Format::Yaml, "Yaml"), (Format::Ron, "Ron")];
+        for (f, n) in formats {
+            let d = format!("{}", f);
+            assert_eq!(&d, n);
+        }
+    }
 }
