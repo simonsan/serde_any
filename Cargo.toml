@@ -11,7 +11,7 @@ readme = "README.md"
 
 [badges]
 gitlab = { repository = "Noughmad/serde_any", branch = "master" }
-codecov = { repository = "Noughmad/serde_any", branch = "master", service = "gitlab" }
+codecov = { repository = "Noughmad/serde_any", service = "gitlab" }
 
 [features]
 default = ["toml", "json", "yaml", "ron"]
