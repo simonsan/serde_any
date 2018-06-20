@@ -931,7 +931,12 @@ mod tests {
             color: "Grey".to_string(),
             is_late: false,
             age: 9000,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
@@ -953,7 +958,12 @@ mod tests {
             color: "White".to_string(),
             is_late: false,
             age: 9001,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
@@ -975,7 +985,12 @@ mod tests {
             color: "White".to_string(),
             is_late: false,
             age: 9001,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
@@ -1003,7 +1018,12 @@ mod tests {
             color: "White".to_string(),
             is_late: false,
             age: 9001,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         let extensions = vec!["json", "toml", "yaml", "ron"];
@@ -1105,16 +1125,32 @@ mod tests {
     fn invalid_data() {
         let s = "invalid {} data [] that cannot <> be parsed by any format !!";
 
-        assert_pattern!(from_str_any::<Wizard>(&s), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
-        assert_pattern!(from_slice_any::<Wizard>(s.as_bytes()), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        assert_pattern!(
+            from_str_any::<Wizard>(&s),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+        assert_pattern!(
+            from_slice_any::<Wizard>(s.as_bytes()),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
     }
 
     #[test]
     fn invalid_field_names() {
         let s = "name: Radagast\ncolor: Brown\nis_late: never\nage: 8000\n";
 
-        assert_pattern!(from_str_any::<Wizard>(&s), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
-        assert_pattern!(from_slice_any::<Wizard>(s.as_bytes()), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        assert_pattern!(
+            from_str_any::<Wizard>(&s),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+        assert_pattern!(
+            from_slice_any::<Wizard>(s.as_bytes()),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
     }
 
     #[test]
@@ -1124,7 +1160,12 @@ mod tests {
             color: "White".to_string(),
             is_late: false,
             age: 9001,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         let json = to_vec(&gandalf, Format::Json).unwrap();
@@ -1149,7 +1190,12 @@ mod tests {
             color: "White".to_string(),
             is_late: false,
             age: 9001,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         for ext in supported_extensions() {
@@ -1170,50 +1216,116 @@ mod tests {
             color: "White".to_string(),
             is_late: false,
             age: 9001,
-            friends: vec!["hobbits".to_string(), "dwarves".to_string(), "elves".to_string(), "men".to_string()],
+            friends: vec![
+                "hobbits".to_string(),
+                "dwarves".to_string(),
+                "elves".to_string(),
+                "men".to_string(),
+            ],
         };
 
         let file_name = "gandalf.dat";
-        assert_pattern!(to_file(file_name, &gandalf), Err(Error::UnsupportedFileExtension(_)), "Error::UnsupportedFileExtension");
+        assert_pattern!(
+            to_file(file_name, &gandalf),
+            Err(Error::UnsupportedFileExtension(_)),
+            "Error::UnsupportedFileExtension"
+        );
         remove_file(file_name).ok();
     }
 
     #[test]
     fn non_existing_file() {
-        assert_pattern!(from_file::<Wizard, _>("no_such_file.json"), Err(Error::Io(_)), "Error::Io");
-        assert_pattern!(from_file::<Wizard, _>("no_such_file.yaml"), Err(Error::Io(_)), "Error::Io");
-        assert_pattern!(from_file::<Wizard, _>("no_such_file.toml"), Err(Error::Io(_)), "Error::Io");
-        assert_pattern!(from_file::<Wizard, _>("no_such_file.ron"), Err(Error::Io(_)), "Error::Io");
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.json"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.yaml"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.toml"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.ron"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
     }
 
     #[test]
     fn non_existing_file_stem() {
-        assert_pattern!(from_file_stem::<Wizard, _>("no_such_file_stem"), Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        assert_pattern!(
+            from_file_stem::<Wizard, _>("no_such_file_stem"),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
     }
 
     #[test]
     fn empty_input_str() {
         let s = "";
 
-        assert_pattern!(from_str::<Wizard>(s, Format::Json), Err(Error::Json(_)), "Error::Json");
-        assert_pattern!(from_str::<Wizard>(s, Format::Yaml), Err(Error::Yaml(_)), "Error::Yaml");
-        assert_pattern!(from_str::<Wizard>(s, Format::Toml), Err(Error::TomlDeserialize(_)), "Error::TomlDeserialize");
-        assert_pattern!(from_str::<Wizard>(s, Format::Ron), Err(Error::RonDeserialize(_)), "Error::RonDeserialize");
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Json),
+            Err(Error::Json(_)),
+            "Error::Json"
+        );
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Yaml),
+            Err(Error::Yaml(_)),
+            "Error::Yaml"
+        );
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Toml),
+            Err(Error::TomlDeserialize(_)),
+            "Error::TomlDeserialize"
+        );
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Ron),
+            Err(Error::RonDeserialize(_)),
+            "Error::RonDeserialize"
+        );
     }
 
     #[test]
     fn empty_input_bytes() {
         let s = b"";
 
-        assert_pattern!(from_slice::<Wizard>(s, Format::Json), Err(Error::Json(_)), "Error::Json");
-        assert_pattern!(from_slice::<Wizard>(s, Format::Yaml), Err(Error::Yaml(_)), "Error::Yaml");
-        assert_pattern!(from_slice::<Wizard>(s, Format::Toml), Err(Error::TomlDeserialize(_)), "Error::TomlDeserialize");
-        assert_pattern!(from_slice::<Wizard>(s, Format::Ron), Err(Error::RonDeserialize(_)), "Error::RonDeserialize");
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Json),
+            Err(Error::Json(_)),
+            "Error::Json"
+        );
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Yaml),
+            Err(Error::Yaml(_)),
+            "Error::Yaml"
+        );
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Toml),
+            Err(Error::TomlDeserialize(_)),
+            "Error::TomlDeserialize"
+        );
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Ron),
+            Err(Error::RonDeserialize(_)),
+            "Error::RonDeserialize"
+        );
     }
 
     #[test]
     fn display_format() {
-        let formats = vec![(Format::Json, "Json"), (Format::Toml, "Toml"), (Format::Yaml, "Yaml"), (Format::Ron, "Ron")];
+        let formats = vec![
+            (Format::Json, "Json"),
+            (Format::Toml, "Toml"),
+            (Format::Yaml, "Yaml"),
+            (Format::Ron, "Ron"),
+        ];
         for (f, n) in formats {
             let d = format!("{}", f);
             assert_eq!(&d, n);
