@@ -1027,7 +1027,7 @@ mod tests {
         };
 
         let extensions = vec!["json", "toml", "yaml", "ron"];
-        let stem = Path::new("gandalf");
+        let stem = Path::new("gandalf_1");
         for ext in extensions {
             let file_name = stem.with_extension(ext);
             to_file(&file_name, &gandalf).unwrap();
@@ -1169,7 +1169,7 @@ mod tests {
         };
 
         let json = to_vec(&gandalf, Format::Json).unwrap();
-        let file_name = "gandalf.dat";
+        let file_name = "gandalf_2.dat";
         {
             let mut file = File::create(file_name).unwrap();
             file.write(&json).unwrap();
@@ -1199,10 +1199,10 @@ mod tests {
         };
 
         for ext in supported_extensions() {
-            let file_name = Path::new("gandalf").with_extension(ext);
+            let file_name = Path::new("gandalf_3").with_extension(ext);
             to_file(&file_name, &gandalf).unwrap();
 
-            let gandalf_the_deserialized: Wizard = from_file_stem("gandalf").unwrap();
+            let gandalf_the_deserialized: Wizard = from_file_stem("gandalf_3").unwrap();
             assert_eq!(gandalf_the_deserialized, gandalf);
 
             remove_file(&file_name).unwrap();
@@ -1224,7 +1224,7 @@ mod tests {
             ],
         };
 
-        let file_name = "gandalf.dat";
+        let file_name = "gandalf_4.dat";
         assert_pattern!(
             to_file(file_name, &gandalf),
             Err(Error::UnsupportedFileExtension(_)),
