@@ -1,17 +1,6 @@
 use std;
 
-#[cfg(feature = "json")]
-use serde_json;
-
-#[cfg(feature = "yaml")]
-use serde_yaml;
-
-#[cfg(feature = "toml")]
-use toml;
-
-#[cfg(feature = "ron")]
-use ron;
-
+use backend::*;
 use format::Format;
 
 /// The common error type

@@ -117,3 +117,35 @@ pub fn guess_format_from_extension(ext: &str) -> Option<Format> {
         _ => None,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn extensions() {
+        for ext in supported_extensions() {
+            let stem = Path::new("test");
+            let from_ext = guess_format_from_extension(ext);
+            let from_path = guess_format(stem.with_extension(ext));
+            assert!(from_ext.is_some());
+            assert!(from_path.is_some());
+            assert_eq!(from_ext, from_path);
+        }
+    }
+
+    #[test]
+    fn display_format() {
+        let formats = vec![
+            (Format::Json, "Json"),
+            (Format::Toml, "Toml"),
+            (Format::Yaml, "Yaml"),
+            (Format::Ron, "Ron"),
+        ];
+        for (f, n) in formats {
+            let d = format!("{}", f);
+            assert_eq!(&d, n);
+        }
+    }
+}

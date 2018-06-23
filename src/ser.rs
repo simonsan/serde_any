@@ -5,18 +5,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::path::Path;
 
-#[cfg(feature = "json")]
-use serde_json;
-
-#[cfg(feature = "yaml")]
-use serde_yaml;
-
-#[cfg(feature = "toml")]
-use toml;
-
-#[cfg(feature = "ron")]
-use ron;
-
+use backend::*;
 use format::{Format, guess_format};
 use error::Error;
 
@@ -253,5 +242,25 @@ where
                 .unwrap_or(String::new());
             Err(Error::UnsupportedFileExtension(ext))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_util::*;
+    use std::fs::remove_file;
+
+    #[test]
+    fn unknown_extension_write() {
+        let gandalf = gandalf_the_grey();
+
+        let file_name = "gandalf_4.dat";
+        assert_pattern!(
+            to_file(file_name, &gandalf),
+            Err(Error::UnsupportedFileExtension(_)),
+            "Error::UnsupportedFileExtension"
+        );
+        remove_file(file_name).ok();
     }
 }

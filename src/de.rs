@@ -4,18 +4,7 @@ use std::path::Path;
 
 use serde::de::{Deserialize, DeserializeOwned};
 
-#[cfg(feature = "json")]
-use serde_json;
-
-#[cfg(feature = "yaml")]
-use serde_yaml;
-
-#[cfg(feature = "toml")]
-use toml;
-
-#[cfg(feature = "ron")]
-use ron;
-
+use backend::*;
 use format::{Format, supported_formats, supported_extensions, guess_format};
 use error::Error;
 
@@ -412,3 +401,180 @@ where
 
     Err(Error::NoSuccessfulParse)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_util::*;
+
+    fn assert_deserialized_any(expected: &Wizard, s: &str) {
+        let deserialized: Wizard = from_str_any(s).unwrap();
+        assert_eq!(&deserialized, expected);
+
+        let deserialized_from_bytes: Wizard = from_slice_any(s.as_bytes()).unwrap();
+        assert_eq!(&deserialized_from_bytes, expected);
+    }
+
+    #[test]
+    fn guess_from_json() {
+        let s = r#"{"name": "Radagast", "color": "Brown", "is_late": true, "age": 8000, friends: ["animals"]}"#;
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    #[should_panic]
+    fn guess_from_json_fail() {
+        let s = r#"{"name" = "Radagast", "color": "Brown", "is_late": true, "age": 8000, friends: ["animals"],}"#;
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_yaml_inline() {
+        let s = r#"{name: Radagast, color: Brown, is_late: true, age: 8000, friends: [animals]}"#;
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_yaml_long() {
+        let s = "name: Radagast\ncolor: Brown\nis_late: true\nage: 8000\nfriends:\n- animals\n";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    #[should_panic]
+    fn guess_from_yaml_long_fail() {
+        let s = "name: Radagast\ncolor: Brown\nis_late: true\nage: 8000\nfriends:\nanimals\n";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_toml() {
+        let s = "name = \"Radagast\"\ncolor = \"Brown\"\nis_late = true\nage = 8000\nfriends = [\n  \"animals\",\n]\n";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn guess_from_ron() {
+        let s = "Wizard (name: \"Radagast\", color: \"Brown\", is_late: true, age: 8000, friends: [\"animals\",],)";
+        assert_deserialized_any(&radagast(), s);
+    }
+
+    #[test]
+    fn invalid_data() {
+        let s = "invalid {} data [] that cannot <> be parsed by any format !!";
+
+        assert_pattern!(
+            from_str_any::<Wizard>(&s),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+        assert_pattern!(
+            from_slice_any::<Wizard>(s.as_bytes()),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+    }
+
+    #[test]
+    fn invalid_field_names() {
+        let s = "name: Radagast\ncolor: Brown\nis_late: never\nage: 8000\n";
+
+        assert_pattern!(
+            from_str_any::<Wizard>(&s),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+        assert_pattern!(
+            from_slice_any::<Wizard>(s.as_bytes()),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+    }
+
+    #[test]
+    fn non_existing_file() {
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.json"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.yaml"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.toml"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+        assert_pattern!(
+            from_file::<Wizard, _>("no_such_file.ron"),
+            Err(Error::Io(_)),
+            "Error::Io"
+        );
+    }
+
+    #[test]
+    fn non_existing_file_stem() {
+        assert_pattern!(
+            from_file_stem::<Wizard, _>("no_such_file_stem"),
+            Err(Error::NoSuccessfulParse),
+            "Error::NoSuccessfulParse"
+        );
+    }
+
+    #[test]
+    fn empty_input_str() {
+        let s = "";
+
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Json),
+            Err(Error::Json(_)),
+            "Error::Json"
+        );
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Yaml),
+            Err(Error::Yaml(_)),
+            "Error::Yaml"
+        );
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Toml),
+            Err(Error::TomlDeserialize(_)),
+            "Error::TomlDeserialize"
+        );
+        assert_pattern!(
+            from_str::<Wizard>(s, Format::Ron),
+            Err(Error::RonDeserialize(_)),
+            "Error::RonDeserialize"
+        );
+    }
+
+    #[test]
+    fn empty_input_bytes() {
+        let s = b"";
+
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Json),
+            Err(Error::Json(_)),
+            "Error::Json"
+        );
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Yaml),
+            Err(Error::Yaml(_)),
+            "Error::Yaml"
+        );
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Toml),
+            Err(Error::TomlDeserialize(_)),
+            "Error::TomlDeserialize"
+        );
+        assert_pattern!(
+            from_slice::<Wizard>(s, Format::Ron),
+            Err(Error::RonDeserialize(_)),
+            "Error::RonDeserialize"
+        );
+    }
+}
+
