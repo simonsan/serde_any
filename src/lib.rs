@@ -96,18 +96,6 @@ mod tests {
     use std::io::Write;
 
     #[test]
-    fn extensions() {
-        for ext in supported_extensions() {
-            let stem = Path::new("test");
-            let from_ext = guess_format_from_extension(ext);
-            let from_path = guess_format(stem.with_extension(ext));
-            assert!(from_ext.is_some());
-            assert!(from_path.is_some());
-            assert_eq!(from_ext, from_path);
-        }
-    }
-
-    #[test]
     fn to_vec_and_back_and_to_vec_again() {
         let gandalf = gandalf_the_grey();
 
