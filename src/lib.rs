@@ -70,15 +70,19 @@ mod test_util;
 
 mod backend;
 
+/// Contains the common error type
 pub mod error;
 pub use error::Error;
 
+/// Types and functions for specifying or determining serialization formats
 pub mod format;
 pub use format::*;
 
+/// Deserialize data to a Rust structure
 pub mod de;
 pub use de::*;
 
+/// Serialize a Rust structure to any data format
 pub mod ser;
 pub use ser::*;
 
