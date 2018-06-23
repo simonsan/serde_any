@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 
 use backend::*;
-use format::{Format, guess_format};
+use format::{guess_format, Format};
 use error::Error;
 
 /// Serialize to a `String`

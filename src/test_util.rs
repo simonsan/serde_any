@@ -49,7 +49,6 @@ pub fn gandalf_the_grey() -> Wizard {
     }
 }
 
-
 macro_rules! assert_pattern {
     ($value:expr, $pattern:pat, $message:expr) => {
         match $value {

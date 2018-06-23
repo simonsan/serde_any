@@ -5,7 +5,7 @@ use std::path::Path;
 use serde::de::{Deserialize, DeserializeOwned};
 
 use backend::*;
-use format::{Format, supported_formats, supported_extensions, guess_format};
+use format::{guess_format, supported_extensions, supported_formats, Format};
 use error::Error;
 
 /// Deserialize from an IO stream using a specified format
@@ -402,7 +402,6 @@ where
     Err(Error::NoSuccessfulParse)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -577,4 +576,3 @@ mod tests {
         );
     }
 }
-

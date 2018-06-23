@@ -91,7 +91,7 @@ mod tests {
     use super::*;
     use test_util::*;
     use std::io::Cursor;
-    use std::fs::{File, remove_file};
+    use std::fs::{remove_file, File};
     use std::path::Path;
     use std::io::Write;
 

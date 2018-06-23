@@ -27,18 +27,11 @@ impl Format {
     /// Support for different formats is controlled by the features used
     /// when building `serde_any`.
     pub fn is_supported(&self) -> bool {
-        #[allow(unreachable_patterns)]
         match self {
-            #[cfg(feature = "toml")]
-            Format::Toml => true,
-            #[cfg(feature = "json")]
-            Format::Json => true,
-            #[cfg(feature = "yaml")]
-            Format::Yaml => true,
-            #[cfg(feature = "ron")]
-            Format::Ron => true,
-
-            _ => false,
+            Format::Toml => cfg!(feature = "toml"),
+            Format::Json => cfg!(feature = "json"),
+            Format::Yaml => cfg!(feature = "yaml"),
+            Format::Ron => cfg!(feature = "ron"),
         }
     }
 }
