@@ -13,7 +13,7 @@ use error::Error;
 ///
 /// # Errors
 ///
-/// If serialization fails, the format-specific error type is returned,
+/// If serialization fails, the format-specific [`Error`] variant is returned,
 /// with the underlying error as its cause.
 ///
 /// # Example
@@ -44,6 +44,9 @@ use error::Error;
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+///
 #[allow(unused_mut)]
 pub fn to_string<T>(value: &T, format: Format) -> Result<String, Error>
 where
@@ -68,7 +71,7 @@ where
 ///
 /// # Errors
 ///
-/// If serialization fails, the format-specific error type is returned,
+/// If serialization fails, the format-specific [`Error`] variant is returned,
 /// with the underlying error as its cause.
 ///
 /// # Example
@@ -101,6 +104,9 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+///
 pub fn to_vec<T>(value: &T, format: Format) -> Result<Vec<u8>, Error>
 where
     T: Serialize,
@@ -124,7 +130,7 @@ where
 ///
 /// # Errors
 ///
-/// If serialization fails, the format-specific error type is returned,
+/// If serialization fails, the format-specific [`Error`] variant is returned,
 /// with the underlying error as its cause.
 ///
 /// # Example
@@ -157,6 +163,9 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+///
 #[allow(unused_mut)]
 pub fn to_writer<W, T>(mut writer: W, value: &T, format: Format) -> Result<(), Error>
 where
@@ -191,9 +200,11 @@ where
 /// # Errors
 ///
 /// If the serialization format cannot be inferred from the file name,
-/// `UnsupportedFileExtension` is returned.
+/// [`Error::UnsupportedFileExtension`] is returned.
 ///
-/// If serialization fails, the format-specific error type is returned,
+/// If opening the file for writing fails, [`Error::Io`] is returned.
+///
+/// If serialization fails, the format-specific [`Error`] variant is returned,
 /// with the underlying error as its cause.
 ///
 /// # Example
@@ -225,6 +236,11 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+/// [`Error::UnsupportedFileExtension`]: ../error/enum.Error.html#variant.UnsupportedFileExtension
+/// [`Error::Io`]: ../error/enum.Error.html#variant.Io
+///
 pub fn to_file<T, P>(path: P, value: &T) -> Result<(), Error>
 where
     T: Serialize,

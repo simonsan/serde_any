@@ -13,9 +13,9 @@ use error::Error;
 /// # Errors
 ///
 /// If the specified format is not supported, this function returns
-/// `Error::UnsupportedFormat`.
+/// [`Error::UnsupportedFormat`].
 ///
-/// If the conversion itself fails, the format-specific variant of `Error`
+/// If the conversion itself fails, the format-specific variant of [`Error`]
 /// will be returned, with the underlying error as its cause.
 ///
 /// # Example
@@ -56,6 +56,10 @@ use error::Error;
 ///     };
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+/// [`Error::UnsupportedFormat`]: ../error/enum.Error.html#variant.UnsupportedFormat
+///
 #[allow(unreachable_patterns, unused_mut)]
 pub fn from_reader<T, R>(mut reader: R, format: Format) -> Result<T, Error>
 where
@@ -85,9 +89,9 @@ where
 /// # Errors
 ///
 /// If the specified format is not supported, this function returns
-/// `Error::UnsupportedFormat`.
+/// [`Error::UnsupportedFormat`].
 ///
-/// If the conversion itself fails, the format-specific variant of `Error`
+/// If the conversion itself fails, the format-specific variant of [`Error`]
 /// will be returned, with the underlying error as its cause.
 ///
 /// # Example
@@ -118,6 +122,10 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+/// [`Error::UnsupportedFormat`]: ../error/enum.Error.html#variant.UnsupportedFormat
+///
 pub fn from_str<'a, T>(s: &'a str, format: Format) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -145,7 +153,7 @@ where
 /// # Errors
 ///
 /// If none of the supported formats can deserialize the string successfully,
-/// `Error::NoSuccessfulParse` is returned.
+/// [`Error::NoSuccessfulParse`] is returned.
 ///
 /// # Example
 ///
@@ -175,6 +183,9 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error::NoSuccessfulParse`]: ../error/enum.Error.html#variant.NoSuccessfulParse
+///
 pub fn from_str_any<'a, T>(s: &'a str) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -196,8 +207,11 @@ where
 ///
 /// # Errors
 ///
-/// If none of the supported formats can deserialize the string successfully,
-/// `Error::NoSuccessfulParse` is returned.
+/// If the specified format is not supported, this function returns
+/// [`Error::UnsupportedFormat`].
+///
+/// If the conversion itself fails, the format-specific variant of [`Error`]
+/// will be returned, with the underlying error as its cause.
 ///
 /// # Example
 ///
@@ -227,6 +241,10 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error`]: ../error/enum.Error.html
+/// [`Error::UnsupportedFormat`]: ../error/enum.Error.html#variant.UnsupportedFormat
+///
 pub fn from_slice<'a, T>(s: &'a [u8], format: Format) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -248,13 +266,13 @@ where
 
 /// Deserialize from a byte slice using any supported format
 ///
+/// This function will attempt to deserialize the slice using each supported format, and will return the result of the
+/// first successful deserialization.
+///
 /// # Errors
 ///
-/// If the specified format is not supported, this function returns
-/// `Error::UnsupportedFormat`.
-///
-/// If the conversion itself fails, the format-specific variant of `Error`
-/// will be returned, with the underlying error as its cause.
+/// If none of the supported formats can deserialize the string successfully,
+/// [`Error::NoSuccessfulParse`] is returned.
 ///
 /// # Example
 ///
@@ -284,6 +302,9 @@ where
 ///     Ok(())
 /// }
 /// ```
+///
+/// [`Error::NoSuccessfulParse`]: ../error/enum.Error.html#variant.NoSuccessfulParse
+///
 pub fn from_slice_any<'a, T>(s: &'a [u8]) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
@@ -300,21 +321,21 @@ where
 
 /// Deserialize from a file
 ///
-/// The format is detected using `guess_format`.
+/// The format is detected using [`guess_format`].
 /// If that fails, such as if the file extension is not recognized,
 /// the whole file is read into a buffer,
-/// and deserialization is attempted using `from_slice_any`.
+/// and deserialization is attempted using [`from_slice_any`].
 ///
 /// # Errors
 ///
 /// If the file extension is recognized, but parsing fails, this function returns
-/// the error from `from_reader`.
+/// the error from [`from_reader`].
 ///
 /// If the file extension is not recognized and the file cannot be opened,
-/// it returns `Error::Io` with the underlying error as the cause.
+/// it returns [`Error::Io`] with the underlying error as the cause.
 ///
 /// If the file extension is not recognized, the file can opened but deserialization fails,
-/// this function returns the error from `from_slice_any`.
+/// this function returns the error from [`from_slice_any`].
 ///
 /// # Example
 ///
@@ -336,6 +357,12 @@ where
 ///     };
 /// }
 /// ```
+///
+/// [`guess_format`]: ../format/fn.guess_format.html
+/// [`from_reader`]: fn.from_reader.html
+/// [`from_slice_any`]: fn.from_slice_any.html
+/// [`Error::Io`]: ../error/enum.Error.html#variant.Io
+///
 pub fn from_file<T, P>(path: P) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -357,13 +384,13 @@ where
 
 /// Deserialize from any file with a given stem
 ///
-/// This function tries to deserialize from any file with stem `stem` and any of the supported extensions.
-/// The list of supported extensions can be queried with `supported_extensions`.
+/// This function tries to deserialize from any file with the given `stem` and any of the supported extensions.
+/// The list of supported extensions can be queried with [`supported_extensions`].
 ///
 /// # Errors
 ///
 /// If none of the supported formats can deserialize the string successfully,
-/// `Error::NoSuccessfulParse` is returned.
+/// [`Error::NoSuccessfulParse`] is returned.
 ///
 /// # Example
 ///
@@ -387,6 +414,10 @@ where
 ///     };
 /// }
 /// ```
+///
+/// [`supported_extensions`]: ../format/fn.supported_extensions.html
+/// [`Error::NoSuccessfulParse`]: ../error/enum.Error.html#variant.NoSuccessfulParse
+///
 pub fn from_file_stem<T, P>(stem: P) -> Result<T, Error>
 where
     T: DeserializeOwned,

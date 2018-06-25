@@ -5,13 +5,13 @@ use std::path::Path;
 /// Serialization or deserialization formats
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Format {
-    /// TOML (Tom's Obvious, Minimal Language), enabled by the `toml` feature.
+    /// TOML (Tom's Obvious, Minimal Language), enabled by the `toml` feature, implemented using [`toml`](https://docs.rs/toml).
     Toml,
-    /// JSON (JavaScript Object Notation), enabled by the `json` feature.
+    /// JSON (JavaScript Object Notation), enabled by the `json` feature, implemented using [`serde_json`](https://docs.rs/serde_json).
     Json,
-    /// YAML (YAML Ain't Markup Language), enabled by the `yaml` feature.
+    /// YAML (YAML Ain't Markup Language), enabled by the `yaml` feature, implemented using [`serde_yaml`](https://docs.rs/serde_yaml).
     Yaml,
-    /// RON (Rusty Object Notation), enabled by the `ron` feature.
+    /// RON (Rusty Object Notation), enabled by the `ron` feature, implemented using [`ron`](https://docs.rs/ron).
     Ron,
 }
 
@@ -60,7 +60,7 @@ pub fn supported_formats() -> Vec<Format> {
 
 /// Return a list of recognized file extensions
 ///
-/// The return value depends on the features used when building serde_any.
+/// The return value depends on the features used when building `serde_any`.
 /// Only file extensions corresponding to supported formats will be returned.
 pub fn supported_extensions() -> Vec<&'static str> {
     let mut e = Vec::new();

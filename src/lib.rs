@@ -6,42 +6,60 @@
 //!
 //! ## Deserialization with a known format
 //!
-//! If the deserialization format is known in advance, `serde_any` mirrors the API of `serde_json` and `serde_yaml`.
-//! Namely, functions [`from_reader`](fn.from_reader.html), [`from_slice`](fn.from_slice.html) and
-//! [`from_str`](fn.from_str.html) work in the same way as those in format-specific crates, except that they take an
-//! additional [`Format`](enum.Format.html) paramater specifying the deserialization format. The
-//! [`from_file`](fn.from_file.html) function is provided as a convenience wrapper around
-//! [`from_reader`](fn.from_reader.html) for the common case of reading from a file.
+//! If the deserialization format is known in advance, `serde_any` mirrors the API of
+//! [`serde_json`](https://docs.rs/serde_json) and [`serde_yaml`](https://docs.rs/serde_yaml).
+//! Namely, functions [`from_reader`], [`from_slice`] and
+//! [`from_str`] work in the same way as those in format-specific crates, except that they take an
+//! additional [`Format`] paramater specifying the deserialization format. The
+//! [`from_file`] function is provided as a convenience wrapper around
+//! [`from_reader`] for the common case of reading from a file.
 //!
 //! ## Deserialization by guessing
 //!
 //! This crate also supports deserialization where the data format is not known in advance.
 //! There are three different ways of inferring the data format:
-//! * with [`from_file`](fn.from_file.html), the format is deduced from the file extension.
+//! * with [`from_file`], the format is deduced from the file extension.
 //!   This is useful if a user can load a data file of any format.
-//! * with [`from_file_stem`](fn.from_file_stem.html), each filename with the given stem and a supported extension
+//! * with [`from_file_stem`], each filename with the given stem and a supported extension
 //!   is checked. If any such file exists, its data is deserialized and returned.
 //!   This is useful for configuration files with a known set of filenames.
-//! * with [`from_slice_any`](fn.from_slice_any.html) and [`from_str_any`](fn.from_str_any.html), deserialization
+//! * with [`from_slice_any`] and [`from_str_any`], deserialization
 //!   using each supported format is tried until one succeeds.
 //!   This is useful when you receive data from an unknown source and don't know what format it is in.
 //!
 //! Note there is no corresponding `from_reader_any` function, as attempting to deserialize from a reader would
-//! consume its data. In order to deserialize from a `std::io::Read`, read the data into a `Vec<u8>` or `String` and
-//! call [`from_slice_any`](fn.from_slice_any) or [`from_str_any`](fn.from_str_any.html).
+//! consume its data. In order to deserialize from a [`io::Read`], read the data into a [`Vec<u8>`] or [`String`] and
+//! call [`from_slice_any`] or [`from_str_any`].
 //!
 //! ## Serialization
 //!
 //! For serialization, the data format must always be provided.
-//! Consistent with the format-specific crates, data may be serialized to a `String` with
-//! [`to_string`](fn.to_string.html), to a `Vec<u8>` with [`to_vec`](fn.to_vec.html), or to a `std::io::Write` with
-//! [`to_writer`](fn.to_writer.html).
+//! Consistent with the format-specific crates, data may be serialized to a [`String`] with
+//! [`to_string`], to a [`Vec<u8>`] with [`to_vec`], or to a [`io::Write`] with
+//! [`to_writer`].
 //!
 //! Alternatively, when writing to a file, the format can be inferred from the file name by the
-//! [`to_file`](fn.to_file.html) function. Similarly to [`from_file`](fn.from_file.html), this is most useful when
+//! [`to_file`] function. Similarly to [`from_file`], this is most useful when
 //! saving to a user-selected file.
 //!
 //! There is no support for pretty-printing yet.
+//!
+//! [`Format`]: format/enum.format.html
+//! [`from_reader`]: de/fn.from_reader.html
+//! [`from_slice`]: de/fn.from_slice.html
+//! [`from_str`]: de/fn.from_str.html
+//! [`from_file`]: de/fn.from_file.html
+//! [`from_file_stem`]: de/fn.from_file_stem.html
+//! [`from_slice_any`]: de/fn.from_slice_any.html
+//! [`from_str_any`]: de/fn.from_str_any.html
+//! [`to_string`]: ser/fn.to_string.html
+//! [`to_vec`]: ser/fn.to_vec.html
+//! [`to_writer`]: ser/fn.to_writer.html
+//! [`to_file`]: ser/fn.to_file.html
+//! [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
+//! [`Vec<u8>`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
+//! [`io::Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
+//! [`io::Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
 //!
 
 #[macro_use]
