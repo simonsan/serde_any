@@ -617,4 +617,25 @@ mod tests {
             "Error::RonDeserialize"
         );
     }
+
+    #[test]
+    fn nosuccessfulparse_underlying_errors() {
+        let s = "invalid {} data [] that cannot <> be parsed by any format !!";
+
+        let result = from_str_any::<Wizard>(&s);
+
+        assert_pattern!(
+            result,
+            Err(Error::NoSuccessfulParse(_)),
+            "Error::NoSuccessfulParse"
+        );
+
+        if let Err(Error::NoSuccessfulParse(v)) = result {
+            assert_eq!(v.len(), 4);
+            assert_pattern!(v[0], (Format::Toml, Error::TomlDeserialize(_)), "Error::TomlDeserialize");
+            assert_pattern!(v[1], (Format::Json, Error::Json(_)), "Error::Json");
+            assert_pattern!(v[2], (Format::Yaml, Error::Yaml(_)), "Error::Yaml");
+            assert_pattern!(v[3], (Format::Ron, Error::RonDeserialize(_)), "Error::RonDeserialize");
+        }
+    }
 }
