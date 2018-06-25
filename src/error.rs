@@ -49,8 +49,10 @@ pub enum Error {
     UnsupportedFileExtension(String),
 
     /// None of the supported formats was able to deserialize successfully
+    ///
+    /// The tuple element is the list of all tried formats and the resulting errors
     #[fail(display = "No format was able to parse the source")]
-    NoSuccessfulParse,
+    NoSuccessfulParse(Vec<(Format, Error)>),
 }
 
 macro_rules! impl_error_from {

@@ -190,14 +190,16 @@ pub fn from_str_any<'a, T>(s: &'a str) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
 {
+    let mut errors = Vec::new();
+
     for format in supported_formats() {
         match from_str(&s, format) {
             Ok(t) => return Ok(t),
-            Err(_) => continue,
+            Err(err) => errors.push((format, err)),
         }
     }
 
-    Err(Error::NoSuccessfulParse)
+    Err(Error::NoSuccessfulParse(errors))
 }
 
 /// Deserialize from a byte slice using a specified format
@@ -309,14 +311,16 @@ pub fn from_slice_any<'a, T>(s: &'a [u8]) -> Result<T, Error>
 where
     T: for<'de> Deserialize<'de>,
 {
+    let mut errors = Vec::new();
+
     for format in supported_formats() {
         match from_slice(&s, format) {
             Ok(t) => return Ok(t),
-            Err(_) => continue,
+            Err(err) => errors.push((format, err)),
         }
     }
 
-    Err(Error::NoSuccessfulParse)
+    Err(Error::NoSuccessfulParse(errors))
 }
 
 /// Deserialize from a file
@@ -423,14 +427,21 @@ where
     T: DeserializeOwned,
     P: AsRef<Path>,
 {
+    let mut errors = Vec::new();
+
     for extension in supported_extensions() {
         let path = stem.as_ref().with_extension(extension);
-        if let Ok(t) = from_file(&path) {
-            return Ok(t);
+        match from_file(&path) {
+            Ok(t) => return Ok(t),
+            Err(err) => {
+                if let Some(format) = guess_format(path) {
+                    errors.push((format, err));
+                }
+            }
         }
     }
 
-    Err(Error::NoSuccessfulParse)
+    Err(Error::NoSuccessfulParse(errors))
 }
 
 #[cfg(test)]
@@ -496,12 +507,12 @@ mod tests {
 
         assert_pattern!(
             from_str_any::<Wizard>(&s),
-            Err(Error::NoSuccessfulParse),
+            Err(Error::NoSuccessfulParse(_)),
             "Error::NoSuccessfulParse"
         );
         assert_pattern!(
             from_slice_any::<Wizard>(s.as_bytes()),
-            Err(Error::NoSuccessfulParse),
+            Err(Error::NoSuccessfulParse(_)),
             "Error::NoSuccessfulParse"
         );
     }
@@ -512,12 +523,12 @@ mod tests {
 
         assert_pattern!(
             from_str_any::<Wizard>(&s),
-            Err(Error::NoSuccessfulParse),
+            Err(Error::NoSuccessfulParse(_)),
             "Error::NoSuccessfulParse"
         );
         assert_pattern!(
             from_slice_any::<Wizard>(s.as_bytes()),
-            Err(Error::NoSuccessfulParse),
+            Err(Error::NoSuccessfulParse(_)),
             "Error::NoSuccessfulParse"
         );
     }
@@ -550,7 +561,7 @@ mod tests {
     fn non_existing_file_stem() {
         assert_pattern!(
             from_file_stem::<Wizard, _>("no_such_file_stem"),
-            Err(Error::NoSuccessfulParse),
+            Err(Error::NoSuccessfulParse(_)),
             "Error::NoSuccessfulParse"
         );
     }

@@ -63,14 +63,22 @@ mod tests {
 
     #[test]
     fn test_assert_pattern_success() {
-        let e: Result<(), Error> = Err(Error::NoSuccessfulParse);
-        assert_pattern!(e, Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        let e: Result<(), Error> = Err(Error::NoSuccessfulParse(Vec::new()));
+        assert_pattern!(
+            e,
+            Err(Error::NoSuccessfulParse(_)),
+            "Error::NoSuccessfulParse"
+        );
     }
 
     #[test]
     #[should_panic]
     fn test_assert_pattern_panic() {
         let e: Result<(), Error> = Ok(());
-        assert_pattern!(e, Err(Error::NoSuccessfulParse), "Error::NoSuccessfulParse");
+        assert_pattern!(
+            e,
+            Err(Error::NoSuccessfulParse(_)),
+            "Error::NoSuccessfulParse"
+        );
     }
 }
