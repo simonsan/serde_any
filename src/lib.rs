@@ -4,7 +4,40 @@
 //!
 //! Dynamic serialization and deserialization with the format chosen at runtime
 //!
+//! ## Reading from and writing to files
+//!
+//! ```
+//! # use std::collections::HashMap;
+//! # use serde_any::{Format, Error};
+//! # fn main() -> Result<(), Error> {
+//! let mut m = HashMap::new();
+//! m.insert("a", "alpha");
+//! m.insert("b", "beta");
+//!
+//! // Serialize to a file, the format is inferred from the file extension
+//! serde_any::to_file("greek.toml", &m)?;
+//!
+//! // Deserialize from a file, the format is also inferred from the file extension
+//! let m2: HashMap<String, String> = serde_any::from_file("greek.toml")?;
+//!
+//! # std::fs::remove_file("greek.toml").unwrap();
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! ## Deserialization with a known format
+//!
+//! ```
+//! # use std::collections::HashMap;
+//! # use serde_any::{Format, Error};
+//! # fn main() -> Result<(), Error> {
+//! let d = r#"{"a": "alpha", "b": "beta"}"#;
+//! let m: HashMap<String, String> = serde_any::from_str(d, Format::Json)?;
+//! # assert_eq!(m.get("a"), Some(&"alpha".to_string()));
+//! # assert_eq!(m.get("b"), Some(&"beta".to_string()));
+//! # Ok(())
+//! # }
+//! ```
 //!
 //! If the deserialization format is known in advance, `serde_any` mirrors the API of
 //! [`serde_json`](https://docs.rs/serde_json) and [`serde_yaml`](https://docs.rs/serde_yaml).
@@ -15,6 +48,17 @@
 //! [`from_reader`] for the common case of reading from a file.
 //!
 //! ## Deserialization by guessing
+//!
+//! ```
+//! # use std::collections::HashMap;
+//! # fn main() -> Result<(), serde_any::Error> {
+//! let d = r#"{"a": "alpha", "b": "beta"}"#;
+//! let m: HashMap<String, String> = serde_any::from_str_any(d)?;
+//! # assert_eq!(m.get("a"), Some(&"alpha".to_string()));
+//! # assert_eq!(m.get("b"), Some(&"beta".to_string()));
+//! # Ok(())
+//! # }
+//! ```
 //!
 //! This crate also supports deserialization where the data format is not known in advance.
 //! There are three different ways of inferring the data format:
@@ -32,6 +76,18 @@
 //! call [`from_slice_any`] or [`from_str_any`].
 //!
 //! ## Serialization
+//!
+//! ```
+//! # use std::collections::HashMap;
+//! # use serde_any::{Format, Error};
+//! # fn main() -> Result<(), Error> {
+//! let mut m = HashMap::new();
+//! m.insert("a", "alpha");
+//! m.insert("b", "beta");
+//! let s = serde_any::to_string(&m, Format::Yaml)?;
+//! # Ok(())
+//! # }
+//! ```
 //!
 //! For serialization, the data format must always be provided.
 //! Consistent with the format-specific crates, data may be serialized to a [`String`] with
