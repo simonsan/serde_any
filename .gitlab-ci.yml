@@ -3,11 +3,13 @@ image: "rust:latest"
 test:cargo:
   before_script:
   - apt-get update -yqq
-  - apt-get install -yqq --no-install-recommends build-essential cmake pkg-config libssl-dev
+  - apt-get install -yqq --no-install-recommends build-essential cmake pkg-config libssl-dev linkchecker
   - RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin
   script:
   - rustc --version && cargo --version
   - cargo test --all
+  - cargo doc
+  - linkchecker target/doc/serde_any/
   - cargo tarpaulin --out Xml
   - "bash <(curl -s https://codecov.io/bash)"
 
