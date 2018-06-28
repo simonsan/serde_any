@@ -100,7 +100,7 @@
 //!
 //! There is no support for pretty-printing yet.
 //!
-//! [`Format`]: format/enum.format.html
+//! [`Format`]: format/enum.Format.html
 //! [`from_reader`]: de/fn.from_reader.html
 //! [`from_slice`]: de/fn.from_slice.html
 //! [`from_str`]: de/fn.from_str.html
