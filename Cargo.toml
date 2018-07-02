@@ -11,7 +11,7 @@ readme = "README.md"
 
 [badges]
 gitlab = { repository = "Noughmad/serde_any", branch = "master" }
-appveyor = { repository = "Noughmad/serde-any", service = "gitlab" }
+appveyor = { repository = "Noughmad/serde_any", service = "gitlab" }
 codecov = { repository = "Noughmad/serde_any", service = "gitlab" }
 
 [features]
