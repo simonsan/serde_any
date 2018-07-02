@@ -447,7 +447,25 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_util::*;
+
+    #[derive(Deserialize, PartialEq, Eq, Debug)]
+    pub struct Wizard {
+        pub name: String,
+        pub is_late: bool,
+        pub color: String,
+        pub age: u32,
+        pub friends: Vec<String>,
+    }
+
+    pub fn radagast() -> Wizard {
+        Wizard {
+            name: "Radagast".to_string(),
+            color: "Brown".to_string(),
+            is_late: true,
+            age: 8000,
+            friends: vec!["animals".to_string()],
+        }
+    }
 
     fn assert_deserialized_any(expected: &Wizard, s: &str) {
         let deserialized: Wizard = from_str_any(s).unwrap();
@@ -505,15 +523,13 @@ mod tests {
     fn invalid_data() {
         let s = "invalid {} data [] that cannot <> be parsed by any format !!";
 
-        assert_pattern!(
+        assert_matches!(
             from_str_any::<Wizard>(&s),
-            Err(Error::NoSuccessfulParse(_)),
-            "Error::NoSuccessfulParse"
+            Err(Error::NoSuccessfulParse(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_slice_any::<Wizard>(s.as_bytes()),
-            Err(Error::NoSuccessfulParse(_)),
-            "Error::NoSuccessfulParse"
+            Err(Error::NoSuccessfulParse(_))
         );
     }
 
@@ -521,48 +537,41 @@ mod tests {
     fn invalid_field_names() {
         let s = "name: Radagast\ncolor: Brown\nis_late: never\nage: 8000\n";
 
-        assert_pattern!(
+        assert_matches!(
             from_str_any::<Wizard>(&s),
-            Err(Error::NoSuccessfulParse(_)),
-            "Error::NoSuccessfulParse"
+            Err(Error::NoSuccessfulParse(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_slice_any::<Wizard>(s.as_bytes()),
-            Err(Error::NoSuccessfulParse(_)),
-            "Error::NoSuccessfulParse"
+            Err(Error::NoSuccessfulParse(_))
         );
     }
 
     #[test]
     fn non_existing_file() {
-        assert_pattern!(
+        assert_matches!(
             from_file::<Wizard, _>("no_such_file.json"),
-            Err(Error::Io(_)),
-            "Error::Io"
+            Err(Error::Io(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_file::<Wizard, _>("no_such_file.yaml"),
-            Err(Error::Io(_)),
-            "Error::Io"
+            Err(Error::Io(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_file::<Wizard, _>("no_such_file.toml"),
-            Err(Error::Io(_)),
-            "Error::Io"
+            Err(Error::Io(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_file::<Wizard, _>("no_such_file.ron"),
-            Err(Error::Io(_)),
-            "Error::Io"
+            Err(Error::Io(_))
         );
     }
 
     #[test]
     fn non_existing_file_stem() {
-        assert_pattern!(
+        assert_matches!(
             from_file_stem::<Wizard, _>("no_such_file_stem"),
-            Err(Error::NoSuccessfulParse(_)),
-            "Error::NoSuccessfulParse"
+            Err(Error::NoSuccessfulParse(_))
         );
     }
 
@@ -570,25 +579,21 @@ mod tests {
     fn empty_input_str() {
         let s = "";
 
-        assert_pattern!(
+        assert_matches!(
             from_str::<Wizard>(s, Format::Json),
-            Err(Error::Json(_)),
-            "Error::Json"
+            Err(Error::Json(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_str::<Wizard>(s, Format::Yaml),
-            Err(Error::Yaml(_)),
-            "Error::Yaml"
+            Err(Error::Yaml(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_str::<Wizard>(s, Format::Toml),
-            Err(Error::TomlDeserialize(_)),
-            "Error::TomlDeserialize"
+            Err(Error::TomlDeserialize(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_str::<Wizard>(s, Format::Ron),
-            Err(Error::RonDeserialize(_)),
-            "Error::RonDeserialize"
+            Err(Error::RonDeserialize(_))
         );
     }
 
@@ -596,25 +601,21 @@ mod tests {
     fn empty_input_bytes() {
         let s = b"";
 
-        assert_pattern!(
+        assert_matches!(
             from_slice::<Wizard>(s, Format::Json),
-            Err(Error::Json(_)),
-            "Error::Json"
+            Err(Error::Json(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_slice::<Wizard>(s, Format::Yaml),
-            Err(Error::Yaml(_)),
-            "Error::Yaml"
+            Err(Error::Yaml(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_slice::<Wizard>(s, Format::Toml),
-            Err(Error::TomlDeserialize(_)),
-            "Error::TomlDeserialize"
+            Err(Error::TomlDeserialize(_))
         );
-        assert_pattern!(
+        assert_matches!(
             from_slice::<Wizard>(s, Format::Ron),
-            Err(Error::RonDeserialize(_)),
-            "Error::RonDeserialize"
+            Err(Error::RonDeserialize(_))
         );
     }
 
@@ -624,18 +625,17 @@ mod tests {
 
         let result = from_str_any::<Wizard>(&s);
 
-        assert_pattern!(
+        assert_matches!(
             result,
-            Err(Error::NoSuccessfulParse(_)),
-            "Error::NoSuccessfulParse"
+            Err(Error::NoSuccessfulParse(_))
         );
 
         if let Err(Error::NoSuccessfulParse(v)) = result {
             assert_eq!(v.len(), 4);
-            assert_pattern!(v[0], (Format::Toml, Error::TomlDeserialize(_)), "Error::TomlDeserialize");
-            assert_pattern!(v[1], (Format::Json, Error::Json(_)), "Error::Json");
-            assert_pattern!(v[2], (Format::Yaml, Error::Yaml(_)), "Error::Yaml");
-            assert_pattern!(v[3], (Format::Ron, Error::RonDeserialize(_)), "Error::RonDeserialize");
+            assert_matches!(v[0], (Format::Toml, Error::TomlDeserialize(_)));
+            assert_matches!(v[1], (Format::Json, Error::Json(_)));
+            assert_matches!(v[2], (Format::Yaml, Error::Yaml(_)));
+            assert_matches!(v[3], (Format::Ron, Error::RonDeserialize(_)));
         }
     }
 }

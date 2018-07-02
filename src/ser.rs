@@ -264,18 +264,25 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test_util::*;
     use std::fs::remove_file;
+
+    #[derive(Serialize, PartialEq, Debug)]
+    struct Foo {
+        size: usize,
+        bar: Vec<f32>,
+    }
 
     #[test]
     fn unknown_extension_write() {
-        let gandalf = gandalf_the_grey();
+        let foo = Foo {
+            size: 10,
+            bar: vec![1.0, 2.0, 4.0, 8.0],
+        };
 
-        let file_name = "gandalf_4.dat";
-        assert_pattern!(
-            to_file(file_name, &gandalf),
-            Err(Error::UnsupportedFileExtension(_)),
-            "Error::UnsupportedFileExtension"
+        let file_name = "ser_foo.dat";
+        assert_matches!(
+            to_file(file_name, &foo),
+            Err(Error::UnsupportedFileExtension(_))
         );
         remove_file(file_name).ok();
     }
