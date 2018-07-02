@@ -523,10 +523,7 @@ mod tests {
     fn invalid_data() {
         let s = "invalid {} data [] that cannot <> be parsed by any format !!";
 
-        assert_matches!(
-            from_str_any::<Wizard>(&s),
-            Err(Error::NoSuccessfulParse(_))
-        );
+        assert_matches!(from_str_any::<Wizard>(&s), Err(Error::NoSuccessfulParse(_)));
         assert_matches!(
             from_slice_any::<Wizard>(s.as_bytes()),
             Err(Error::NoSuccessfulParse(_))
@@ -537,10 +534,7 @@ mod tests {
     fn invalid_field_names() {
         let s = "name: Radagast\ncolor: Brown\nis_late: never\nage: 8000\n";
 
-        assert_matches!(
-            from_str_any::<Wizard>(&s),
-            Err(Error::NoSuccessfulParse(_))
-        );
+        assert_matches!(from_str_any::<Wizard>(&s), Err(Error::NoSuccessfulParse(_)));
         assert_matches!(
             from_slice_any::<Wizard>(s.as_bytes()),
             Err(Error::NoSuccessfulParse(_))
@@ -579,14 +573,8 @@ mod tests {
     fn empty_input_str() {
         let s = "";
 
-        assert_matches!(
-            from_str::<Wizard>(s, Format::Json),
-            Err(Error::Json(_))
-        );
-        assert_matches!(
-            from_str::<Wizard>(s, Format::Yaml),
-            Err(Error::Yaml(_))
-        );
+        assert_matches!(from_str::<Wizard>(s, Format::Json), Err(Error::Json(_)));
+        assert_matches!(from_str::<Wizard>(s, Format::Yaml), Err(Error::Yaml(_)));
         assert_matches!(
             from_str::<Wizard>(s, Format::Toml),
             Err(Error::TomlDeserialize(_))
@@ -601,14 +589,8 @@ mod tests {
     fn empty_input_bytes() {
         let s = b"";
 
-        assert_matches!(
-            from_slice::<Wizard>(s, Format::Json),
-            Err(Error::Json(_))
-        );
-        assert_matches!(
-            from_slice::<Wizard>(s, Format::Yaml),
-            Err(Error::Yaml(_))
-        );
+        assert_matches!(from_slice::<Wizard>(s, Format::Json), Err(Error::Json(_)));
+        assert_matches!(from_slice::<Wizard>(s, Format::Yaml), Err(Error::Yaml(_)));
         assert_matches!(
             from_slice::<Wizard>(s, Format::Toml),
             Err(Error::TomlDeserialize(_))
@@ -625,10 +607,7 @@ mod tests {
 
         let result = from_str_any::<Wizard>(&s);
 
-        assert_matches!(
-            result,
-            Err(Error::NoSuccessfulParse(_))
-        );
+        assert_matches!(result, Err(Error::NoSuccessfulParse(_)));
 
         if let Err(Error::NoSuccessfulParse(v)) = result {
             assert_eq!(v.len(), 4);
