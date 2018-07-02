@@ -1,4 +1,5 @@
 #![warn(missing_docs)]
+#![doc(html_root_url = "https://docs.rs/serde_any/0.3.0")]
 
 //! # Serde Any
 //!
