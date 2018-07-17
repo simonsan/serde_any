@@ -62,6 +62,10 @@ where
         Format::Toml => Ok(toml::to_string(value)?),
         #[cfg(feature = "ron")]
         Format::Ron => Ok(ron::ser::to_string(value)?),
+        #[cfg(feature = "xml")]
+        Format::Xml => Ok(xml::to_string(value)?),
+        #[cfg(feature = "ron")]
+        Format::Url => Ok(url::to_string(value)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -121,6 +125,10 @@ where
         Format::Toml => Ok(toml::to_vec(value)?),
         #[cfg(feature = "ron")]
         Format::Ron => Ok(ron::ser::to_string(value)?.into_bytes()),
+        #[cfg(feature = "xml")]
+        Format::Xml => Ok(xml::to_string(value)?.into_bytes()),
+        #[cfg(feature = "url")]
+        Format::Url => Ok(url::to_string(value)?.into_bytes()),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -187,6 +195,14 @@ where
         #[cfg(feature = "ron")]
         Format::Ron => {
             let s = ron::ser::to_string(value)?;
+            write!(&mut writer, "{}", s)?;
+            Ok(())
+        }
+        #[cfg(feature = "xml")]
+        Format::Xml => Ok(xml::to_writer(writer, value)?),
+        #[cfg(feature = "url")]
+        Format::Url => {
+            let s = url::to_string(value)?;
             write!(&mut writer, "{}", s)?;
             Ok(())
         }

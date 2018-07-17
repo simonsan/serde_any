@@ -33,12 +33,15 @@ pub fn old_bilbo() -> Hobbit {
     }
 }
 
+pub fn all_formats() -> Vec<Format> {
+    vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron, Format::Xml, Format::Url]
+}
+
 #[test]
 fn to_vec_and_back_and_to_vec_again() {
     let bilbo = young_bilbo();
 
-    let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
-    for format in formats {
+    for format in all_formats() {
         assert!(format.is_supported());
 
         let bilbo_the_serialized = to_vec(&bilbo, format).unwrap();
@@ -53,8 +56,7 @@ fn to_vec_and_back_and_to_vec_again() {
 fn to_string_and_back_and_to_string_again() {
     let bilbo = old_bilbo();
 
-    let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
-    for format in formats {
+    for format in all_formats() {
         assert!(format.is_supported());
 
         let bilbo_the_serialized = to_string(&bilbo, format).unwrap();
@@ -69,8 +71,7 @@ fn to_string_and_back_and_to_string_again() {
 fn to_cursor_and_back_again() {
     let bilbo = old_bilbo();
 
-    let formats = vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron];
-    for format in formats {
+    for format in all_formats() {
         assert!(format.is_supported());
 
         let mut v: Vec<u8> = Vec::new();
