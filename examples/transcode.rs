@@ -17,6 +17,8 @@ struct Opt {
     input: PathBuf,
     #[structopt(short = "o", long = "output", parse(from_os_str))]
     output: PathBuf,
+    #[structopt(short = "p", long = "pretty")]
+    pretty: bool,
 }
 
 //
@@ -43,7 +45,11 @@ fn main() -> Result<(), failure::Error> {
 
     // Writes the Value to the given output file,
     // with the format chosen according to the file extension.
-    serde_any::to_file(&opt.output, &value)?;
+    if opt.pretty {
+        serde_any::to_file_pretty(&opt.output, &value)?;
+    } else {
+        serde_any::to_file(&opt.output, &value)?;
+    }
 
     Ok(())
 }
