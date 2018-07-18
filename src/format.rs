@@ -46,23 +46,6 @@ impl Format {
             Format::Url => cfg!(feature = "url"),
         }
     }
-
-    /// Checks if this format can serialize data
-    ///
-    /// All currently supported formats except XML can serialize data.
-    pub fn can_serialize(&self) -> bool {
-        match self {
-            Format::Xml => false,
-            f => f.is_supported(),
-        }
-    }
-
-    /// Checks if this format can deserialize data
-    ///
-    /// All currently supported formats can deserialize data.
-    pub fn can_deserialize(&self) -> bool {
-        self.is_supported()
-    }
 }
 
 impl FromStr for Format {
