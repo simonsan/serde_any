@@ -2,6 +2,8 @@ use std;
 
 use backend::*;
 use format::Format;
+
+#[cfg(feature = "xml")]
 use failure::SyncFailure;
 
 /// The common error type
