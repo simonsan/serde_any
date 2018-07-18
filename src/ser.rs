@@ -64,7 +64,7 @@ where
         Format::Ron => Ok(ron::ser::to_string(value)?),
         #[cfg(feature = "xml")]
         Format::Xml => Ok(xml::to_string(value)?),
-        #[cfg(feature = "ron")]
+        #[cfg(feature = "url")]
         Format::Url => Ok(url::to_string(value)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
