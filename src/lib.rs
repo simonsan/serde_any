@@ -99,7 +99,10 @@
 //! [`to_file`] function. Similarly to [`from_file`], this is most useful when
 //! saving to a user-selected file.
 //!
-//! There is no support for pretty-printing yet.
+//! All serialization functions have pretty printing variants with a `_pretty` suffix, such as
+//! [`to_string_pretty`]. However, not all formats support pretty printing.
+//! In such cases, the output from pretty printing functions will be identical to the output
+//! from serialization functions without pretty printing.
 //!
 //! [`Format`]: format/enum.Format.html
 //! [`from_reader`]: de/fn.from_reader.html
@@ -117,6 +120,7 @@
 //! [`Vec<u8>`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 //! [`io::Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
 //! [`io::Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
+//! [`to_string_pretty`]: ser/fn.to_string_pretty.html
 //!
 
 #[macro_use]

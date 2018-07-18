@@ -103,6 +103,73 @@ fn to_file_and_back_again() {
     }
 }
 
+
+#[test]
+fn to_vec_and_back_and_to_vec_again_pretty() {
+    let bilbo = young_bilbo();
+
+    for format in all_formats() {
+        assert!(format.is_supported());
+
+        let bilbo_the_serialized = to_vec_pretty(&bilbo, format).unwrap();
+        let bilbo_the_deserialized: Hobbit = from_slice(&bilbo_the_serialized, format).unwrap();
+        assert_eq!(bilbo_the_deserialized, bilbo);
+        let bilbo_the_serialized_again = to_vec_pretty(&bilbo_the_deserialized, format).unwrap();
+        assert_eq!(bilbo_the_serialized_again, bilbo_the_serialized);
+    }
+}
+
+#[test]
+fn to_string_and_back_and_to_string_again_pretty() {
+    let bilbo = old_bilbo();
+
+    for format in all_formats() {
+        assert!(format.is_supported());
+
+        let bilbo_the_serialized = to_string_pretty(&bilbo, format).unwrap();
+        let bilbo_the_deserialized: Hobbit = from_str(&bilbo_the_serialized, format).unwrap();
+        assert_eq!(bilbo_the_deserialized, bilbo);
+        let bilbo_the_serialized_again = to_string_pretty(&bilbo_the_deserialized, format).unwrap();
+        assert_eq!(bilbo_the_serialized_again, bilbo_the_serialized);
+    }
+}
+
+#[test]
+fn to_cursor_and_back_again_pretty() {
+    let bilbo = old_bilbo();
+
+    for format in all_formats() {
+        assert!(format.is_supported());
+
+        let mut v: Vec<u8> = Vec::new();
+        to_writer_pretty(Cursor::new(&mut v), &bilbo, format).unwrap();
+
+        let bilbo_the_deserialized_from_reader: Hobbit = from_reader(Cursor::new(&mut v), format).unwrap();
+        assert_eq!(bilbo_the_deserialized_from_reader, bilbo);
+
+        let bilbo_the_deserialized_from_slice: Hobbit = from_slice(&v, format).unwrap();
+        assert_eq!(bilbo_the_deserialized_from_slice, bilbo);
+
+        let bilbo_the_deserialized_from_slice_any: Hobbit = from_slice_any(&v).unwrap();
+        assert_eq!(bilbo_the_deserialized_from_slice_any, bilbo);
+    }
+}
+
+#[test]
+fn to_file_and_back_again_pretty() {
+    let bilbo = old_bilbo();
+
+    let extensions = vec!["json", "toml", "yaml", "ron"];
+    let stem = Path::new("bilbo_5");
+    for ext in extensions {
+        let file_name = stem.with_extension(ext);
+        to_file_pretty(&file_name, &bilbo).unwrap();
+        let bilbo_the_deserialized: Hobbit = from_file(&file_name).unwrap();
+        remove_file(&file_name).unwrap();
+        assert_eq!(bilbo_the_deserialized, bilbo);
+    }
+}
+
 #[test]
 fn valid_but_unknown_extension() {
     let bilbo = old_bilbo();
