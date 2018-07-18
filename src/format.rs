@@ -198,8 +198,8 @@ mod tests {
 
     #[test]
     fn parse_format_invalid() {
-        let strings = &["", "j", "a", "hobbit", "josn", "yml"];
-        for s in strings {
+        let invalid_format_strings = vec!["", "j", "a", "hobbit", "josn", "yoml", "yml"];
+        for s in invalid_format_strings {
             let p = s.parse::<Format>();
             assert!(p.is_err());
         }
