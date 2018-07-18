@@ -3,6 +3,9 @@ use std;
 use backend::*;
 use format::Format;
 
+#[cfg(feature = "xml")]
+use failure::SyncFailure;
+
 /// The common error type
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -35,6 +38,21 @@ pub enum Error {
     #[cfg(feature = "ron")]
     #[fail(display = "RON serialize error: {}", _0)]
     RonSerialize(#[fail(cause)] ron::ser::Error),
+
+    /// Error deserializing with XML
+    #[cfg(feature = "xml")]
+    #[fail(display = "XML error: {}", _0)]
+    Xml(#[fail(cause)] SyncFailure<xml::Error>),
+
+    /// Error deserializing with URL
+    #[cfg(feature = "url")]
+    #[fail(display = "URL deserialize error: {}", _0)]
+    UrlDeserialize(#[fail(cause)] url::de::Error),
+
+    /// Error serializing with URL
+    #[cfg(feature = "url")]
+    #[fail(display = "URL serialize error: {}", _0)]
+    UrlSerialize(#[fail(cause)] url::ser::Error),
 
     /// IO error
     #[fail(display = "IO error: {}", _0)]
@@ -82,3 +100,15 @@ impl_error_from!(toml::de::Error => Error::TomlDeserialize);
 impl_error_from!(ron::ser::Error => Error::RonSerialize);
 #[cfg(feature = "ron")]
 impl_error_from!(ron::de::Error => Error::RonDeserialize);
+
+#[cfg(feature = "xml")]
+impl From<xml::Error> for Error {
+    fn from(e: xml::Error) -> Error {
+        Error::Xml(SyncFailure::new(e))
+    }
+}
+
+#[cfg(feature = "url")]
+impl_error_from!(url::ser::Error => Error::UrlSerialize);
+#[cfg(feature = "url")]
+impl_error_from!(url::de::Error => Error::UrlDeserialize);

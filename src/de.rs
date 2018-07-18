@@ -79,6 +79,10 @@ where
         }
         #[cfg(feature = "ron")]
         Format::Ron => Ok(ron::de::from_reader::<_, T>(reader)?),
+        #[cfg(feature = "xml")]
+        Format::Xml => Ok(xml::from_reader::<_, T>(reader)?),
+        #[cfg(feature = "url")]
+        Format::Url => Ok(url::from_reader::<T, _>(reader)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -140,6 +144,10 @@ where
         Format::Toml => Ok(toml::from_str::<T>(s)?),
         #[cfg(feature = "ron")]
         Format::Ron => Ok(ron::de::from_str::<T>(s)?),
+        #[cfg(feature = "xml")]
+        Format::Xml => Ok(xml::from_str(s)?),
+        #[cfg(feature = "url")]
+        Format::Url => Ok(url::from_str::<T>(s)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -254,13 +262,17 @@ where
     #[allow(unreachable_patterns)]
     match format {
         #[cfg(feature = "yaml")]
-        Format::Yaml => Ok(serde_yaml::from_slice::<T>(s)?),
+        Format::Yaml => Ok(serde_yaml::from_slice(s)?),
         #[cfg(feature = "json")]
-        Format::Json => Ok(serde_json::from_slice::<T>(s)?),
+        Format::Json => Ok(serde_json::from_slice(s)?),
         #[cfg(feature = "toml")]
-        Format::Toml => Ok(toml::from_slice::<T>(s)?),
+        Format::Toml => Ok(toml::from_slice(s)?),
         #[cfg(feature = "ron")]
-        Format::Ron => Ok(ron::de::from_bytes::<T>(s)?),
+        Format::Ron => Ok(ron::de::from_bytes(s)?),
+        #[cfg(feature = "xml")]
+        Format::Xml => Ok(xml::from_reader(s)?),
+        #[cfg(feature = "url")]
+        Format::Url => Ok(url::from_bytes(s)?),
 
         _ => Err(Error::UnsupportedFormat(format)),
     }
@@ -610,7 +622,7 @@ mod tests {
         assert_matches!(result, Err(Error::NoSuccessfulParse(_)));
 
         if let Err(Error::NoSuccessfulParse(v)) = result {
-            assert_eq!(v.len(), 4);
+            assert_eq!(v.len(), 6);
             assert_matches!(v[0], (Format::Toml, Error::TomlDeserialize(_)));
             assert_matches!(v[1], (Format::Json, Error::Json(_)));
             assert_matches!(v[2], (Format::Yaml, Error::Yaml(_)));

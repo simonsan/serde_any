@@ -1,6 +1,7 @@
 use std::fmt;
 use std::ffi::OsStr;
 use std::path::Path;
+use std::str::FromStr;
 
 /// Serialization or deserialization formats
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -13,7 +14,16 @@ pub enum Format {
     Yaml,
     /// RON (Rusty Object Notation), enabled by the `ron` feature, implemented using [`ron`](https://docs.rs/ron).
     Ron,
+    /// XML (Rusty Object Notation), enabled by the `xml` feature, implemented using [`serde-xml-rs`](https://docs.rs/serde-xml-rs).
+    Xml,
+    /// Url encoding (also known as percent encoding), enabled by the `url` feature, implemented using [`serde_urlencode`](https://docs.rs/serde_urlencode).
+    Url,
 }
+
+/// The common error type
+#[derive(Debug, Fail)]
+#[fail(display = "Unknown format name {}", _0)]
+pub struct UnknownFormatStringError(String);
 
 impl fmt::Display for Format {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -32,6 +42,24 @@ impl Format {
             Format::Json => cfg!(feature = "json"),
             Format::Yaml => cfg!(feature = "yaml"),
             Format::Ron => cfg!(feature = "ron"),
+            Format::Xml => cfg!(feature = "xml"),
+            Format::Url => cfg!(feature = "url"),
+        }
+    }
+}
+
+impl FromStr for Format {
+    type Err = UnknownFormatStringError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match &s.to_lowercase()[..] {
+            "toml" => Ok(Format::Toml),
+            "json" => Ok(Format::Json),
+            "yaml" => Ok(Format::Yaml),
+            "ron" => Ok(Format::Ron),
+            "xml" => Ok(Format::Xml),
+            "url" => Ok(Format::Url),
+            s => Err(UnknownFormatStringError(s.to_string())),
         }
     }
 }
@@ -54,6 +82,12 @@ pub fn supported_formats() -> Vec<Format> {
 
     #[cfg(feature = "ron")]
     f.push(Format::Ron);
+
+    #[cfg(feature = "xml")]
+    f.push(Format::Xml);
+
+    #[cfg(feature = "url")]
+    f.push(Format::Url);
 
     f
 }
@@ -78,9 +112,10 @@ pub fn supported_extensions() -> Vec<&'static str> {
     }
 
     #[cfg(feature = "ron")]
-    {
-        e.push("ron");
-    }
+    e.push("ron");
+
+    #[cfg(feature = "xml")]
+    e.push("xml");
 
     e
 }
@@ -107,6 +142,7 @@ pub fn guess_format_from_extension(ext: &str) -> Option<Format> {
         "json" => Some(Format::Json),
         "toml" => Some(Format::Toml),
         "ron" => Some(Format::Ron),
+        "xml" => Some(Format::Xml),
         _ => None,
     }
 }
@@ -135,10 +171,37 @@ mod tests {
             (Format::Toml, "Toml"),
             (Format::Yaml, "Yaml"),
             (Format::Ron, "Ron"),
+            (Format::Xml, "Xml"),
+            (Format::Url, "Url"),
         ];
         for (f, n) in formats {
             let d = format!("{}", f);
             assert_eq!(&d, n);
+        }
+    }
+
+    #[test]
+    fn parse_format() {
+        let formats = vec![
+            (Format::Json, "Json"),
+            (Format::Toml, "Toml"),
+            (Format::Yaml, "Yaml"),
+            (Format::Ron, "Ron"),
+            (Format::Xml, "Xml"),
+            (Format::Url, "Url"),
+        ];
+        for (f, n) in formats {
+            let parsed_format: Format = n.parse().unwrap();
+            assert_eq!(parsed_format, f);
+        }
+    }
+
+    #[test]
+    fn parse_format_invalid() {
+        let invalid_format_strings = vec!["", "j", "a", "hobbit", "josn", "yoml", "yml"];
+        for s in invalid_format_strings {
+            let p = s.parse::<Format>();
+            assert!(p.is_err());
         }
     }
 }
