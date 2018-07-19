@@ -128,7 +128,10 @@ where
         #[cfg(feature = "toml")]
         Format::Toml => Ok(toml::to_string_pretty(value)?),
         #[cfg(feature = "ron")]
-        Format::Ron => Ok(ron::ser::to_string_pretty(value, ron::ser::PrettyConfig::default())?),
+        Format::Ron => Ok(ron::ser::to_string_pretty(
+            value,
+            ron::ser::PrettyConfig::default(),
+        )?),
         #[cfg(feature = "xml")]
         Format::Xml => Ok(xml::to_string(value)?),
         #[cfg(feature = "url")]

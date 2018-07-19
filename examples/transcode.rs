@@ -36,7 +36,11 @@ struct Opt {
 fn main() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
 
-    println!("Transcoding from '{}' to '{}'", opt.input.display(), opt.output.display());
+    println!(
+        "Transcoding from '{}' to '{}'",
+        opt.input.display(),
+        opt.output.display()
+    );
 
     // Reads a Value from the given input file.
     // The format is chosen according to the file extension if possible,

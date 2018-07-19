@@ -34,7 +34,14 @@ pub fn old_bilbo() -> Hobbit {
 }
 
 pub fn all_formats() -> Vec<Format> {
-    vec![Format::Json, Format::Toml, Format::Yaml, Format::Ron, Format::Xml, Format::Url]
+    vec![
+        Format::Json,
+        Format::Toml,
+        Format::Yaml,
+        Format::Ron,
+        Format::Xml,
+        Format::Url,
+    ]
 }
 
 #[test]
@@ -102,7 +109,6 @@ fn to_file_and_back_again() {
         assert_eq!(bilbo_the_deserialized, bilbo);
     }
 }
-
 
 #[test]
 fn to_vec_and_back_and_to_vec_again_pretty() {
