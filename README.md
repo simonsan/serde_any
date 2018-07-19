@@ -10,14 +10,14 @@ By default, JSON, YAML, TOML, RON, XML, and URL encoding formats are supported
 
 ```
 [dependencies]
-serde_any = "0.4"
+serde_any = "0.5"
 ```
 
 The list of supported formats can be controlled via feature flags
 
 ```
 [dependencies]
-serde_any = { version = "0.4", default-features = false, features = ["yaml", "toml"] }
+serde_any = { version = "0.5", default-features = false, features = ["yaml", "toml"] }
 ```
 
 ## Deserialization
