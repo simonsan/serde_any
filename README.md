@@ -6,7 +6,7 @@ The format can be either chosen at runtime, inferred from the file name, or gues
 
 ## Supported formats
 
-By default, JSON, YAML, TOML, and RON formats are supported
+By default, JSON, YAML, TOML, RON, XML, and URL encoding formats are supported
 
 ```
 [dependencies]
@@ -29,7 +29,7 @@ let m: MyStruct = serde_any::from_file("my_data.json")?;
 ```
 
 If support for multiple formats is desired, data can be deserialized from a fixed file stem.
-The following will look for `my_data.json`, `my_data.yaml`, `my_data.yml`, `my_data.toml`, `my_data.ron`.
+The following will look for `my_data.json`, `my_data.yaml`, `my_data.yml`, `my_data.toml`, `my_data.ron`, `my_data.xml`.
 
 ```
 let m: MyStruct = serde_any::from_file_stem("my_data")?;
@@ -70,6 +70,8 @@ let yaml_byte_vec = serde_any::to_vec(&m, Format::Yaml)?;
 let writer = File::create("some_data_file.toml")?;
 serde_any::to_writer(writer, Format::Toml)?;
 ```
+
+All serialization functions have pretty printing variants with a `_pretty` suffix.
 
 ## License
 
