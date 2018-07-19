@@ -147,7 +147,7 @@ extern crate serde_yaml;
 extern crate ron;
 
 #[cfg(feature = "xml")]
-extern crate serde_xml_rs;
+extern crate serde_xml_any;
 
 #[cfg(feature = "url")]
 extern crate serde_urlencoded;

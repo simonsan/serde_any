@@ -18,7 +18,7 @@ codecov = { repository = "Noughmad/serde_any", service = "gitlab" }
 default = ["toml", "json", "yaml", "ron", "xml", "url"]
 json = ["serde_json"]
 yaml = ["serde_yaml"]
-xml = ["serde-xml-rs"]
+xml = ["serde-xml-any"]
 url = ["serde_urlencoded"]
 
 [dependencies]
@@ -27,7 +27,7 @@ toml = { version = "0.4", optional = true }
 serde_json = { version = "1", optional = true }
 serde_yaml = { version = "0.7", optional = true }
 ron = { version = "0.3", optional = true }
-serde-xml-rs = { git = "https://github.com/RReverser/serde-xml-rs.git", rev = "551c78d", optional = true }
+serde-xml-any = { version = "0.0.3", optional = true }
 serde_urlencoded = { version = "0.5.2", optional = true }
 failure = "0.1.1"
 

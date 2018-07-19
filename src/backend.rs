@@ -11,7 +11,7 @@ pub(crate) use toml;
 pub(crate) use ron;
 
 #[cfg(feature = "xml")]
-pub(crate) use serde_xml_rs as xml;
+pub(crate) use serde_xml_any as xml;
 
 #[cfg(feature = "url")]
 pub(crate) use serde_urlencoded as url;
