@@ -1,6 +1,6 @@
 [package]
 name = "serde_any"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Miha Čančula <miha@noughmad.eu>"]
 license = "MIT OR Apache-2.0"
 description = "Dynamic serialization and deserialization with the format chosen at runtime"
